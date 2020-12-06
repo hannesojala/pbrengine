@@ -9,27 +9,53 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/ext/quaternion_float.hpp>
 
+// Spaceship style relative camera
+class Camera {
+public:
+    Camera(){}
+    Camera(glm::vec3 position, glm::vec3 forward, glm::vec3 up, float fov):
+        position(position), forward(forward), up(up),
+        right(glm::cross(up, forward)), fov(fov){}
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 forward  = glm::vec3(0.0f, 0.0f,-1.0f);
+    glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 right    = glm::vec3(1.0f, 0.0f, 0.0f);
+    float fov = glm::radians(90.f);
+    void pitchView(float radians) {
+        forward = glm::normalize((forward * cos(radians)) + (up * sin(radians)));
+        up = glm::normalize(glm::cross(right, forward));
+    }
+    void yawView(float radians) {
+        right = glm::normalize((right * cos(radians)) + (forward * sin(radians)));
+        forward = glm::normalize(glm::cross(up, right));
+    }
+    void rollView(float radians) {
+        right = glm::normalize((right * cos(radians)) + (up * sin(radians)));
+        up = glm::normalize(glm::cross(right, forward));
+    }
+};
+
 class RenderObject {
 public:
-    RenderObject(glShader& shader, glBuffer& VBO, glVAO& VAO) :
-        m_shader(shader), m_VBO(VBO), m_VAO(VAO)
+    RenderObject(glShader& program, glBuffer& VBO, glVAO& VAO) :
+        shaderProgram(program), vertexBuffer(VBO), vertexArray(VAO)
     {}
     glShader& getShader() {
-        return m_shader;
+        return shaderProgram;
     }
     glBuffer& getVBO() {
-        return m_VBO;
+        return vertexBuffer;
     }
     glVAO& getVAO() {
-        return m_VAO;
+        return vertexArray;
     }
     glm::mat4 modelMat() {
         return glm::mat4(1.f);
     }
 private:
-    glShader& m_shader;
-    glBuffer& m_VBO;
-    glVAO& m_VAO;
+    glShader& shaderProgram;
+    glBuffer& vertexBuffer;
+    glVAO& vertexArray;
     //glm::vec3 m_position = glm::vec3(0.f, 0.f, 0.f);
     //glm::vec3 m_scale = glm::vec3(0.f, 0.f, 0.f);
     //glm::vec3 m_orientation = glm::vec3(0.f, 0.f, 0.f); // use quat instead?
@@ -58,6 +84,7 @@ public:
         program(glShader(shaders)),
         VBO(glBuffer(vertices, sizeof(vertices), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)),
         VAO(glVAO(attributes, program)),
+        camera(Camera()),
         running(true)
     {
         toRender.push_back(
@@ -102,16 +129,16 @@ public:
     void update() {
         // Access keys with keystate[SDL_SCANCODE(key)]
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
-        if(keystate[SDL_SCANCODE_W]) cameraPos += float(dt_seconds) * 1.F * cameraFwd;
-        if(keystate[SDL_SCANCODE_A]) cameraPos -= float(dt_seconds) * glm::normalize(glm::cross(cameraFwd, cameraUp));
-        if(keystate[SDL_SCANCODE_S]) cameraPos -= float(dt_seconds) * 1.F * cameraFwd;
-        if(keystate[SDL_SCANCODE_D]) cameraPos += float(dt_seconds) * glm::normalize(glm::cross(cameraFwd, cameraUp));
-        if(keystate[SDL_SCANCODE_UP])    cameraPitch(float(dt_seconds) * 1.f);
-        if(keystate[SDL_SCANCODE_DOWN])  cameraPitch(float(dt_seconds) *-1.F);
-        if(keystate[SDL_SCANCODE_LEFT])  cameraYaw(float(dt_seconds) * 1.F);
-        if(keystate[SDL_SCANCODE_RIGHT]) cameraYaw(float(dt_seconds) * -1.F);
-        if(keystate[SDL_SCANCODE_Q])     cameraRoll(float(dt_seconds) * 1.F);
-        if(keystate[SDL_SCANCODE_E])     cameraRoll(float(dt_seconds) * -1.F);
+        if(keystate[SDL_SCANCODE_W]) camera.position += float(dt_seconds) * 1.F * camera.forward;
+        if(keystate[SDL_SCANCODE_A]) camera.position -= float(dt_seconds) * glm::normalize(glm::cross(camera.forward, camera.up));
+        if(keystate[SDL_SCANCODE_S]) camera.position -= float(dt_seconds) * 1.F * camera.forward;
+        if(keystate[SDL_SCANCODE_D]) camera.position += float(dt_seconds) * glm::normalize(glm::cross(camera.forward, camera.up));
+        if(keystate[SDL_SCANCODE_UP])    camera.pitchView(float(dt_seconds) * 1.f);
+        if(keystate[SDL_SCANCODE_DOWN])  camera.pitchView(float(dt_seconds) *-1.F);
+        if(keystate[SDL_SCANCODE_LEFT])  camera.yawView(float(dt_seconds) * 1.F);
+        if(keystate[SDL_SCANCODE_RIGHT]) camera.yawView(float(dt_seconds) * -1.F);
+        if(keystate[SDL_SCANCODE_Q])     camera.rollView(float(dt_seconds) * 1.F);
+        if(keystate[SDL_SCANCODE_E])     camera.rollView(float(dt_seconds) * -1.F);
     }
 
     void render() {
@@ -121,11 +148,11 @@ public:
 
         for (RenderObject ob : toRender) {
             ob.getShader().use();
-            glm::mat4 proj = glm::perspective(glm::radians(45.f), window.getAspect(), 0.03125f, 16.f);
-            glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFwd, cameraUp);
+            glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
+            glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
             ob.getShader().setUniform("u_mvp", proj * view * ob.modelMat());
             ob.getVAO().bind();
-            glDrawArrays(GL_TRIANGLES, 0, ob.getVBO().size());
+            glDrawArrays(GL_TRIANGLES, 0, ob.getVBO().getSize());
         }
 
         window.swap();
@@ -136,24 +163,7 @@ private:
     glBuffer VBO;
     glVAO VAO;
     std::vector<RenderObject> toRender;
-
-    // Camera
-    glm::vec3 cameraPos     = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraFwd     = glm::vec3(0.0f, 0.0f,-1.0f);
-    glm::vec3 cameraRight   = glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 cameraUp      = glm::vec3(0.0f, 1.0f, 0.0f);
-    void cameraPitch(float angle) {
-        cameraFwd = glm::normalize((cameraFwd * cos(angle)) + (cameraUp * sin(angle)));
-        cameraUp = glm::normalize(glm::cross(cameraRight, cameraFwd));
-    }
-    void cameraYaw(float angle) {
-        cameraRight = glm::normalize((cameraRight * cos(angle)) + (cameraFwd * sin(angle)));
-        cameraFwd = glm::normalize(glm::cross(cameraUp, cameraRight));
-    }
-    void cameraRoll(float angle) {
-        cameraRight = glm::normalize((cameraRight * cos(angle)) + (cameraUp * sin(angle)));
-        cameraUp = glm::normalize(glm::cross(cameraRight, cameraFwd));
-    }
+    Camera camera;
 
      // Time variables
     Uint64 time_init;

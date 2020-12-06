@@ -14,17 +14,17 @@ class glVAO {
 public:
     glVAO(const std::vector<Attribute>& attributes, glShader program) 
     {
-        glGenVertexArrays(1, &m_ID);
-        if (!m_ID)
+        glGenVertexArrays(1, &ID);
+        if (!ID)
             std::cerr << "VAO Error.\n";
-        glBindVertexArray(m_ID);
+        glBindVertexArray(ID);
         unsigned int stride = 0;
         unsigned int offset = 0;
         for (unsigned int i = 0; i < attributes.size(); i++) {
             stride += attributes[i].size;
         }
         for (unsigned int i = 0; i < attributes.size(); i++) {
-            GLint attribute = glGetAttribLocation(program.ID(), attributes[i].name.c_str());
+            GLint attribute = glGetAttribLocation(program.getID(), attributes[i].name.c_str());
             if (attribute < 0) std::cerr << "Attribute error: " << std::hex << glGetError() << "\n";
             glVertexAttribPointer(attribute, attributes[i].size, GL_FLOAT, false,
                 stride * sizeof(GLfloat), (void*) (offset * sizeof(GLfloat)));
@@ -33,13 +33,13 @@ public:
         }
     }
     ~glVAO() {
-        glDeleteVertexArrays(1, &m_ID);
+        glDeleteVertexArrays(1, &ID);
     }
 private:
-    GLuint m_ID;
+    GLuint ID;
 public:
     void bind() {
-        glBindVertexArray(m_ID);
+        glBindVertexArray(ID);
     }
     void unbind() {
         glBindVertexArray(0);

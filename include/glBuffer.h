@@ -3,28 +3,28 @@
 class glBuffer {
 public:
     glBuffer(GLfloat data[], unsigned long size, GLenum target, GLenum usage) :
-        m_target(target), m_usage(usage), m_size(size)
+        target(target), usage(usage), size(size)
     {
-        glGenBuffers(1, &m_ID);
-        glBindBuffer(target, m_ID);
+        glGenBuffers(1, &ID);
+        glBindBuffer(target, ID);
         glBufferData(target, size * sizeof(GLfloat), &data[0], usage);
     }
     ~glBuffer() { 
-        glDeleteBuffers(1, &m_ID);
+        glDeleteBuffers(1, &ID);
     }
 private:
-    GLenum m_target;
-    GLenum m_usage;
-    GLuint m_ID;
-    unsigned long m_size;
+    GLenum target;
+    GLenum usage;
+    GLuint ID;
+    unsigned long size;
 public:
     void bind() {
-        glBindBuffer(m_target, m_ID);
+        glBindBuffer(target, ID);
     }
     void unbind() {
-        glBindBuffer(m_target, 0);
+        glBindBuffer(target, 0);
     }
-    unsigned long size() {
-        return m_size;
+    unsigned long getSize() {
+        return size;
     }
 };

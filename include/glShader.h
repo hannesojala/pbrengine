@@ -18,7 +18,7 @@ struct ShaderSrcInfo {
 
 class glShader {
 public:
-    glShader() : m_ID(0) {}
+    glShader() : ID(0) {}
     glShader(std::vector<ShaderSrcInfo> sources) {
         std::vector<GLuint> compiledShaders;
         for (ShaderSrcInfo shaderInfo : sources) {
@@ -26,16 +26,16 @@ public:
             GLuint compiledSrc = compileSource(src, shaderInfo.type);
             compiledShaders.push_back(compiledSrc);
         }
-        m_ID = glCreateProgram();
+        ID = glCreateProgram();
         for (GLuint shader : compiledShaders) {
-            glAttachShader(m_ID, shader);
+            glAttachShader(ID, shader);
         }
-        glLinkProgram(m_ID);
+        glLinkProgram(ID);
         int success;
         char infoLog[512];
-        glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+        glGetProgramiv(ID, GL_LINK_STATUS, &success);
         if(!success) {
-            glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
+            glGetProgramInfoLog(ID, 512, NULL, infoLog);
             std::cerr << "Error linking shader program:\n" << infoLog << "\n";
         }
         for (GLuint shader : compiledShaders) {
@@ -46,7 +46,7 @@ public:
         // fix
     }
     void use() {
-        glUseProgram(m_ID);
+        glUseProgram(ID);
     }
 private:
     std::string openSource(std::string path) {
@@ -70,17 +70,17 @@ private:
         return shader;
     }
 
-    GLuint m_ID = 0;
+    GLuint ID = 0;
 public:
     void DeleteProgram() {
-        glDeleteProgram(m_ID);
-        m_ID = 0;
+        glDeleteProgram(ID);
+        ID = 0;
     }
-    GLuint ID() {
-        return m_ID;
+    GLuint getID() {
+        return ID;
     }
     void setUniform(std::string name, glm::vec4 value) {
-        GLint location = glGetUniformLocation(m_ID, name.c_str());
+        GLint location = glGetUniformLocation(ID, name.c_str());
         if (location < 0) {
             std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
             return;
@@ -88,7 +88,7 @@ public:
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
     void setUniform(std::string name, glm::mat4 value) {
-        GLint location = glGetUniformLocation(m_ID, name.c_str());
+        GLint location = glGetUniformLocation(ID, name.c_str());
         if (location < 0) {
             std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
             return;
