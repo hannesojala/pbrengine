@@ -1,3 +1,10 @@
+/** 
+ * TODO:
+ * Convert calls to DSA equiv
+ * Actually everything here: https://github.com/fendevel/Guide-to-Modern-OpenGL-Functions
+*/
+
+
 #include <Engine.h>
 int main(int argc, char** argv) {
     std::vector<char*> arguments;

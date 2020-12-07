@@ -12,34 +12,43 @@ struct Attribute {
 
 class glVAO {
 public:
-    glVAO(const std::vector<Attribute>& attributes, glShader program) 
+    glVAO() = default;
+    glVAO(const std::vector<Attribute>& attributes, const glShader& program) 
     {
+        GLuint ID;
         glGenVertexArrays(1, &ID);
-        if (!ID)
+        gl_name = glName(ID);
+        if (!gl_name.get())
             std::cerr << "VAO Error.\n";
-        glBindVertexArray(ID);
+        glBindVertexArray(gl_name.get());
         unsigned int stride = 0;
         unsigned int offset = 0;
         for (unsigned int i = 0; i < attributes.size(); i++) {
             stride += attributes[i].size;
         }
-        for (unsigned int i = 0; i < attributes.size(); i++) {
-            GLint attribute = glGetAttribLocation(program.getID(), attributes[i].name.c_str());
-            if (attribute < 0) std::cerr << "Attribute error: " << std::hex << glGetError() << "\n";
-            glVertexAttribPointer(attribute, attributes[i].size, GL_FLOAT, false,
+        for (Attribute attrib : attributes) {
+            GLint attribute = glGetAttribLocation(program.getID(), attrib.name.c_str());
+            if (attribute < 0) std::cerr << "Attribute " << attrib.name << " error: " << std::hex << glGetError() << "\n";
+            glVertexAttribPointer(attribute, attrib.size, GL_FLOAT, false,
                 stride * sizeof(GLfloat), (void*) (offset * sizeof(GLfloat)));
             glEnableVertexAttribArray(attribute);
-            offset += attributes[i].size;
+            offset += attrib.size;
         }
     }
+
+    // Default move ctor and operator
+    glVAO(glVAO &&other) = default;
+    glVAO &operator=(glVAO &&other) = default;
+
     ~glVAO() {
+        GLuint ID = gl_name.get();
         glDeleteVertexArrays(1, &ID);
     }
 private:
-    GLuint ID;
+    glName gl_name;
 public:
     void bind() {
-        glBindVertexArray(ID);
+        glBindVertexArray(gl_name.get());
     }
     void unbind() {
         glBindVertexArray(0);

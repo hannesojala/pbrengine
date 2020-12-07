@@ -2,29 +2,47 @@
 
 class glBuffer {
 public:
-    glBuffer(GLfloat data[], unsigned long size, GLenum target, GLenum usage) :
+    glBuffer() = default;
+    glBuffer(GLfloat data[], GLuint size, GLenum target, GLenum usage) :
         target(target), usage(usage), size(size)
     {
+        GLuint ID;
         glGenBuffers(1, &ID);
-        glBindBuffer(target, ID);
-        glBufferData(target, size * sizeof(GLfloat), &data[0], usage);
+        gl_name = glName(ID);
+        glBindBuffer(target, gl_name.get());
+        glBufferData(target, size, data, usage);
     }
+    glBuffer(GLuint data[], GLuint size, GLenum target, GLenum usage) :
+        target(target), usage(usage), size(size)
+    {
+        GLuint ID;
+        glGenBuffers(1, &ID);
+        gl_name = glName(ID);
+        glBindBuffer(target, gl_name.get());
+        glBufferData(target, size, data, usage);
+    }
+
+    // Default move ctor and operator
+    glBuffer(glBuffer &&other) = default;
+    glBuffer &operator=(glBuffer &&other) = default;
+
     ~glBuffer() { 
+        GLuint ID = gl_name.get();
         glDeleteBuffers(1, &ID);
     }
 private:
     GLenum target;
     GLenum usage;
-    GLuint ID;
-    unsigned long size;
+    glName gl_name;
+    GLuint size; // NOT length. size in bytes
 public:
     void bind() {
-        glBindBuffer(target, ID);
+        glBindBuffer(target, gl_name.get());
     }
     void unbind() {
         glBindBuffer(target, 0);
     }
-    unsigned long getSize() {
+    GLuint getSize() {
         return size;
     }
 };

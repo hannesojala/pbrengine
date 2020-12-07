@@ -3,11 +3,11 @@
 #include <glWindow.h>
 #include <glBuffer.h>
 #include <glVAO.h>
+#include <Shapes.h>
+#include <glTexture.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/ext/quaternion_float.hpp>
 
 // Spaceship style relative camera
 class Camera {
@@ -37,14 +37,17 @@ public:
 
 class RenderObject {
 public:
-    RenderObject(glShader& program, glBuffer& VBO, glVAO& VAO) :
-        shaderProgram(program), vertexBuffer(VBO), vertexArray(VAO)
+    RenderObject(glShader& program, glBuffer& VBO, glBuffer& EBO, glVAO& VAO) :
+        shaderProgram(program), vertexBuffer(VBO), elementBuffer(EBO), vertexArray(VAO)
     {}
     glShader& getShader() {
         return shaderProgram;
     }
     glBuffer& getVBO() {
         return vertexBuffer;
+    }
+    glBuffer& getEBO() {
+        return elementBuffer;
     }
     glVAO& getVAO() {
         return vertexArray;
@@ -53,18 +56,14 @@ public:
         return glm::mat4(1.f);
     }
 private:
+    // VBO/EBO and VAO could be owned by the RO, but shader probably not.
     glShader& shaderProgram;
     glBuffer& vertexBuffer;
+    glBuffer& elementBuffer;
     glVAO& vertexArray;
     //glm::vec3 m_position = glm::vec3(0.f, 0.f, 0.f);
     //glm::vec3 m_scale = glm::vec3(0.f, 0.f, 0.f);
-    //glm::vec3 m_orientation = glm::vec3(0.f, 0.f, 0.f); // use quat instead?
-};
-
-GLfloat vertices[] = {
-    -0.5f, -0.5f, 0.0f, 1.0,     1.0, 0.0, 0.0, 1.0,
-     0.5f, -0.5f, 0.0f, 1.0,     0.0, 1.0, 0.0, 1.0,
-     0.0f,  0.5f, 0.0f, 1.0,     0.0, 0.0, 1.0, 1.0
+    //glm::vec3 m_orientation = glm::vec3(0.f, 0.f, 0.f);
 };
 
 auto shaders = std::vector<ShaderSrcInfo>{
@@ -73,30 +72,37 @@ auto shaders = std::vector<ShaderSrcInfo>{
 };
 
 auto attributes = std::vector<Attribute>{
-    {"a_position", 4},
-    {"a_color", 4}
+    {"a_position", 3},
+    {"a_uvCoords", 2}
 };
 
 class Engine {
 public:
     Engine(int width, int height) :
-        window(glWindow(width, height, "REEEEEEEEEEEEEEEEEEEe")),
-        program(glShader(shaders)),
-        VBO(glBuffer(vertices, sizeof(vertices), GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)),
-        VAO(glVAO(attributes, program)),
+        window(glWindow(width, height, "PBR Engine")),
         camera(Camera()),
         running(true)
     {
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        program = glShader(shaders);
+        texture = texFromImg("texture.png");
+        VBO = glBuffer(CubeFlat::vertices, sizeof(CubeFlat::vertices), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+        EBO = glBuffer(CubeFlat::indices, sizeof(CubeFlat::indices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+        VAO = glVAO(attributes, program);
         toRender.push_back(
             RenderObject(
                 program,
                 VBO,
+                EBO,
                 VAO
             )
         );
     }
     ~Engine() 
-    {}
+    {
+        glDeleteTextures(1, &texture);
+    }
 
     void startFrame() {
         time_prev = time_curr;
@@ -126,42 +132,56 @@ public:
         }
     }
 
+    const float MOVESPEED = 5.0;
+    const float CAMERASPEED = 2.5;
+
     void update() {
         // Access keys with keystate[SDL_SCANCODE(key)]
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
-        if(keystate[SDL_SCANCODE_W]) camera.position += float(dt_seconds) * 1.F * camera.forward;
-        if(keystate[SDL_SCANCODE_A]) camera.position -= float(dt_seconds) * glm::normalize(glm::cross(camera.forward, camera.up));
-        if(keystate[SDL_SCANCODE_S]) camera.position -= float(dt_seconds) * 1.F * camera.forward;
-        if(keystate[SDL_SCANCODE_D]) camera.position += float(dt_seconds) * glm::normalize(glm::cross(camera.forward, camera.up));
-        if(keystate[SDL_SCANCODE_UP])    camera.pitchView(float(dt_seconds) * 1.f);
-        if(keystate[SDL_SCANCODE_DOWN])  camera.pitchView(float(dt_seconds) *-1.F);
-        if(keystate[SDL_SCANCODE_LEFT])  camera.yawView(float(dt_seconds) * 1.F);
-        if(keystate[SDL_SCANCODE_RIGHT]) camera.yawView(float(dt_seconds) * -1.F);
-        if(keystate[SDL_SCANCODE_Q])     camera.rollView(float(dt_seconds) * 1.F);
-        if(keystate[SDL_SCANCODE_E])     camera.rollView(float(dt_seconds) * -1.F);
+        if(keystate[SDL_SCANCODE_W]) camera.position += float(dt_seconds) * MOVESPEED * camera.forward;
+        if(keystate[SDL_SCANCODE_A]) camera.position -= float(dt_seconds) * MOVESPEED * camera.right;
+        if(keystate[SDL_SCANCODE_S]) camera.position -= float(dt_seconds) * MOVESPEED * camera.forward;
+        if(keystate[SDL_SCANCODE_D]) camera.position += float(dt_seconds) * MOVESPEED * camera.right;
+        if(keystate[SDL_SCANCODE_UP])    camera.pitchView(float(dt_seconds) * CAMERASPEED);
+        if(keystate[SDL_SCANCODE_DOWN])  camera.pitchView(float(dt_seconds) *-CAMERASPEED);
+        if(keystate[SDL_SCANCODE_LEFT])  camera.yawView(float(dt_seconds)   * CAMERASPEED);
+        if(keystate[SDL_SCANCODE_RIGHT]) camera.yawView(float(dt_seconds)   *-CAMERASPEED);
+        if(keystate[SDL_SCANCODE_Q])     camera.rollView(float(dt_seconds)  * CAMERASPEED);
+        if(keystate[SDL_SCANCODE_E])     camera.rollView(float(dt_seconds)  *-CAMERASPEED);
     }
 
     void render() {
 
         glClearColor(1.0, 0.5, 0.5, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (RenderObject ob : toRender) {
             ob.getShader().use();
             glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
             glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
             ob.getShader().setUniform("u_mvp", proj * view * ob.modelMat());
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            ob.getShader().setUniform("u_texture", 0);
+
             ob.getVAO().bind();
-            glDrawArrays(GL_TRIANGLES, 0, ob.getVBO().getSize());
+            ob.getEBO().bind();
+            glDrawElements(GL_TRIANGLES, ob.getEBO().getSize(), GL_UNSIGNED_INT, 0);
         }
 
         window.swap();
     }
 private:
     glWindow window;
+    // This should be in some data struct with render objects grabbing references to elements
     glShader program;
+    // These should be owned by the render object, maybe not so in DSA
     glBuffer VBO;
+    glBuffer EBO;
     glVAO VAO;
+    GLuint texture;
+    // rethink
     std::vector<RenderObject> toRender;
     Camera camera;
 
