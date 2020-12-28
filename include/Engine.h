@@ -85,6 +85,7 @@ public:
     {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
+        std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
         program = glShader(shaders);
         texture = texFromImg("texture.png");
         VBO = glBuffer(CubeFlat::vertices, sizeof(CubeFlat::vertices), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
