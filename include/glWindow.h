@@ -35,10 +35,16 @@ public:
 private:
     SDL_Window* pWindow;
     SDL_GLContext glContext;
-    SDL_Event event;
 public:
+    SDL_Event event;
     void swap() {
         SDL_GL_SwapWindow(pWindow);
+    }
+    void setSwap(int mode) {
+        SDL_GL_SetSwapInterval(mode);
+    }
+    int getSwap() {
+        return SDL_GL_GetSwapInterval();
     }
     void getSize(int& width, int& height) {
         SDL_GetWindowSize(pWindow, &width, &height);
