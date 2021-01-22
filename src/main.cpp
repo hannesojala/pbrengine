@@ -4,6 +4,7 @@
  * Actually everything here: https://github.com/fendevel/Guide-to-Modern-OpenGL-Functions
 */
 
+const char* texname;
 
 #include <Engine.h>
 int main(int argc, char** argv) {
@@ -12,6 +13,8 @@ int main(int argc, char** argv) {
     for (char* arg : arguments) {
         std::cout << arg << "\n";
     }
+    if (argc == 2) texname = argv[1];
+    else texname = "unspecified_image.png";
     Engine engine(1600, 900);
     while(engine.running) {
         engine.startFrame();

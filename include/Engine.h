@@ -10,6 +10,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+const float MOVESPEED = 5.0;
+const float CAMERASPEED = 2.5;
+
 auto shaders = std::vector<ShaderSrcInfo>{
     {"vert.glsl", GL_VERTEX_SHADER},
     {"frag.glsl", GL_FRAGMENT_SHADER}
@@ -31,7 +34,7 @@ public:
         glEnable(GL_DEPTH_TEST);
         std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
         program = glShader(shaders);
-        texture = texFromImg("texture.png");
+        texture = texFromImg(texname);
         VBO = glBuffer(CubeFlat::vertices, sizeof(CubeFlat::vertices), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
         EBO = glBuffer(CubeFlat::indices, sizeof(CubeFlat::indices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
         VAO = glVAO(attributes, program);
@@ -86,9 +89,6 @@ public:
             }
         }
     }
-
-    const float MOVESPEED = 5.0;
-    const float CAMERASPEED = 2.5;
 
     void update() {
         // Access keys with keystate[SDL_SCANCODE(key)]
