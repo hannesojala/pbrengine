@@ -40,7 +40,6 @@ public:
         int success;
         char infoLog[512];
         glGetProgramiv(gl_name.get(), GL_LINK_STATUS, &success);
-
         if(!success) {
             glGetProgramInfoLog(gl_name.get(), 512, NULL, infoLog);
             std::cerr << "Error linking shader program:\n" << infoLog << "\n";

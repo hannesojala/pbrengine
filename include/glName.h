@@ -26,5 +26,5 @@ public:
         return ID;
     }
 private:
-    GLuint ID;
+    GLuint ID = 0;
 };  

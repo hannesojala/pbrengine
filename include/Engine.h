@@ -23,6 +23,49 @@ auto attributes = std::vector<Attribute>{
     {"a_uvCoords", 2}
 };
 
+// not mine
+void debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+{
+	auto const src_str = [source]() {
+		switch (source)
+		{
+		case GL_DEBUG_SOURCE_API: return "API";
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
+		case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
+		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
+		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
+		}
+        return "This shouldn't happen!";
+	}();
+
+	auto const type_str = [type]() {
+		switch (type)
+		{
+		case GL_DEBUG_TYPE_ERROR: return "ERROR";
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
+		case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
+		case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
+		case GL_DEBUG_TYPE_MARKER: return "MARKER";
+		case GL_DEBUG_TYPE_OTHER: return "OTHER";
+		}
+        return "This shouldn't happen!";
+	}();
+
+	auto const severity_str = [severity]() {
+		switch (severity) {
+		case GL_DEBUG_SEVERITY_NOTIFICATION: return "NOTIFICATION";
+		case GL_DEBUG_SEVERITY_LOW: return "LOW";
+		case GL_DEBUG_SEVERITY_MEDIUM: return "MEDIUM";
+		case GL_DEBUG_SEVERITY_HIGH: return "HIGH";
+		}
+        return "This shouldn't happen!";
+	}();
+
+	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
+}
+
 class Engine {
 public:
     Engine(int width, int height) :
@@ -32,9 +75,17 @@ public:
     {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
+        
+        if (IN_DEBUG_MODE) {
+            glEnable(GL_DEBUG_OUTPUT);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+            glDebugMessageCallback(debug_message_callback, nullptr);
+        }
+
         std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
+        
         program = glShader(shaders);
-        texture = texFromImg(texname);
+        texture = texFromImg(TEXTURE_FILENAME);
         VBO = glBuffer(CubeFlat::vertices, sizeof(CubeFlat::vertices), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
         EBO = glBuffer(CubeFlat::indices, sizeof(CubeFlat::indices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
         VAO = glVAO(attributes, program);
@@ -93,16 +144,16 @@ public:
     void update() {
         // Access keys with keystate[SDL_SCANCODE(key)]
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
-        if(keystate[SDL_SCANCODE_W]) camera.position += float(dt_seconds) * MOVESPEED * camera.forward;
-        if(keystate[SDL_SCANCODE_A]) camera.position -= float(dt_seconds) * MOVESPEED * camera.right;
-        if(keystate[SDL_SCANCODE_S]) camera.position -= float(dt_seconds) * MOVESPEED * camera.forward;
-        if(keystate[SDL_SCANCODE_D]) camera.position += float(dt_seconds) * MOVESPEED * camera.right;
-        if(keystate[SDL_SCANCODE_UP])    camera.pitchView(float(dt_seconds) * CAMERASPEED);
-        if(keystate[SDL_SCANCODE_DOWN])  camera.pitchView(float(dt_seconds) *-CAMERASPEED);
-        if(keystate[SDL_SCANCODE_LEFT])  camera.yawView(float(dt_seconds)   * CAMERASPEED);
-        if(keystate[SDL_SCANCODE_RIGHT]) camera.yawView(float(dt_seconds)   *-CAMERASPEED);
-        if(keystate[SDL_SCANCODE_Q])     camera.rollView(float(dt_seconds)  * CAMERASPEED);
-        if(keystate[SDL_SCANCODE_E])     camera.rollView(float(dt_seconds)  *-CAMERASPEED);
+        if(keystate[SDL_SCANCODE_W])        camera.position += float(dt_seconds) * MOVESPEED * camera.forward;
+        if(keystate[SDL_SCANCODE_A])        camera.position -= float(dt_seconds) * MOVESPEED * camera.right;
+        if(keystate[SDL_SCANCODE_S])        camera.position -= float(dt_seconds) * MOVESPEED * camera.forward;
+        if(keystate[SDL_SCANCODE_D])        camera.position += float(dt_seconds) * MOVESPEED * camera.right;
+        if(keystate[SDL_SCANCODE_UP])       camera.pitchView(float(dt_seconds) * CAMERASPEED);
+        if(keystate[SDL_SCANCODE_DOWN])     camera.pitchView(float(dt_seconds) *-CAMERASPEED);
+        if(keystate[SDL_SCANCODE_LEFT])     camera.yawView(float(dt_seconds)   * CAMERASPEED);
+        if(keystate[SDL_SCANCODE_RIGHT])    camera.yawView(float(dt_seconds)   *-CAMERASPEED);
+        if(keystate[SDL_SCANCODE_Q])        camera.rollView(float(dt_seconds)  * CAMERASPEED);
+        if(keystate[SDL_SCANCODE_E])        camera.rollView(float(dt_seconds)  *-CAMERASPEED);
     }
 
     void render() {
