@@ -26,6 +26,11 @@ auto attributes = std::vector<Attribute>{
 // not mine
 void debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
+    // To shut the compiler up about unused param warnings. 
+    // I do not plan to use them but they are required for this callback function.
+    (void)length;
+    (void)user_param;
+
 	auto const src_str = [source]() {
 		switch (source)
 		{
@@ -192,10 +197,10 @@ private:
     Camera camera;
 
      // Time variables
-    Uint64 time_init;
-    Uint64 time_prev;
-    Uint64 time_curr;
-    double dt_seconds;
+    Uint64 time_init = 0;
+    Uint64 time_prev = 0;
+    Uint64 time_curr = 0;
+    double dt_seconds = 0.0;
 public:
     bool running;
 };

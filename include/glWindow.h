@@ -10,6 +10,7 @@
 
 class glWindow {
 public:
+    // memory leak note: seems that simply SDL_Init() followed by SDL_Quit() causes a memory leak of 80kb!
     glWindow(int width, int height, std::string title) {
         SDL_Init(SDL_INIT_VIDEO);
         Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;

@@ -16,11 +16,11 @@ public:
     glVAO(const std::vector<Attribute>& attributes, const glShader& program) 
     {
         GLuint ID;
-        glGenVertexArrays(1, &ID);
+        glCreateVertexArrays(1, &ID);
         gl_name = glName(ID);
+        glBindVertexArray(gl_name.get());
         if (!gl_name.get())
             std::cerr << "VAO Error.\n";
-        glBindVertexArray(gl_name.get());
         unsigned int stride = 0;
         unsigned int offset = 0;
         for (unsigned int i = 0; i < attributes.size(); i++) {

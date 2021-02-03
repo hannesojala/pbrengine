@@ -11,6 +11,10 @@ public:
         gl_name = glName(ID);
         glBindBuffer(target, gl_name.get());
         glBufferData(target, size, data, usage);
+        //GLuint ID;
+        //glCreateBuffers(1, &ID);
+        //gl_name = glName(ID);
+        //glNamedBufferData(gl_name.get(), size, data, usage);
     }
     glBuffer(GLuint data[], GLuint size, GLenum target, GLenum usage) :
         target(target), usage(usage), size(size)
@@ -20,6 +24,10 @@ public:
         gl_name = glName(ID);
         glBindBuffer(target, gl_name.get());
         glBufferData(target, size, data, usage);
+        //GLuint ID;
+        //glCreateBuffers(1, &ID);
+        //gl_name = glName(ID);
+        //glNamedBufferData(gl_name.get(), size, data, usage);
     }
 
     // Default move ctor and operator

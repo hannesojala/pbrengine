@@ -1,5 +1,6 @@
 #include <SDL2/SDL_image.h>
 #include <glad/glad.h>
+#include <cmath>
 #include <string>
 
 GLuint texFromImg(std::string path) {
@@ -11,22 +12,24 @@ GLuint texFromImg(std::string path) {
         return 0;
     }
 
+    auto is4BPP = imgSurf->format->BitsPerPixel == 4;
+    auto format = (is4BPP) ? GL_RGBA : GL_RGB;
+    auto sized_format = (is4BPP) ? GL_RGBA8 : GL_RGB8;
+
     GLuint ID;
     glCreateTextures(GL_TEXTURE_2D, 1, &ID);
-    glBindTexture(GL_TEXTURE_2D, ID);
     
-    int Mode = GL_RGB;
-    
-    if(imgSurf->format->BytesPerPixel == 4) {
-        Mode = GL_RGBA;
-    }
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, Mode, imgSurf->w, imgSurf->h, 0, Mode, GL_UNSIGNED_BYTE, imgSurf->pixels);
+    glTextureParameteri(ID, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTextureParameteri(ID, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTextureParameteri(ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(ID, GL_TEXTURE_BASE_LEVEL, 0);
+    unsigned int max_mips = log2(std::min(imgSurf->w, imgSurf->h));
+    glTextureParameteri(ID, GL_TEXTURE_MAX_LEVEL, max_mips);
 
+    glTextureStorage2D(ID, max_mips, sized_format, imgSurf->w, imgSurf->h);
+    glTextureSubImage2D(ID, 0, 0, 0, imgSurf->w, imgSurf->h, format, GL_UNSIGNED_BYTE, imgSurf->pixels);
     glGenerateTextureMipmap(ID);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     SDL_FreeSurface(imgSurf);
     IMG_Quit();
