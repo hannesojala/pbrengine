@@ -12,10 +12,15 @@ struct vertex {
 };
 
 struct indexed_model {
-    GLuint vbo, ibo, vao;
+    GLuint vbo, ibo, vao, texture;
 };
 
-indexed_model upload_indexed_model(vertex* vertices, int vertex_count, uint32_t* indices, int index_count) {
+/* TODO */
+
+// Merge ibo and vbo into one buffer
+// Generalize for different attrib layouts (as in deleted code, go to earlier commits, supply struct)
+
+indexed_model upload_indexed_model(vertex* vertices, int vertex_count, uint32_t* indices, int index_count, GLuint texture) {
     indexed_model model;
 
     glCreateBuffers(1, &model.vbo);	
@@ -40,6 +45,8 @@ indexed_model upload_indexed_model(vertex* vertices, int vertex_count, uint32_t*
     glVertexArrayAttribBinding(model.vao, 0, 0);
     glVertexArrayAttribBinding(model.vao, 1, 0);
     glVertexArrayAttribBinding(model.vao, 2, 0);
+
+    model.texture = texture;
 
     return model;
 }

@@ -34,14 +34,13 @@ public:
         std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
 
         program = glShader(shaders);
-        texture = texFromImg(TEXTURE_FILENAME);
        
-        model = upload_indexed_model(CubeFlat::vertices, 36, CubeFlat::indices, 36);
+        model = upload_indexed_model(CubeFlat::vertices, 36, CubeFlat::indices, 36, texFromImg(TEXTURE_FILENAME));
 
     }
     ~Engine() 
     {
-        glDeleteTextures(1, &texture);
+        glDeleteTextures(1, &(model.texture));
     }
 
     void startFrame() {
@@ -106,7 +105,7 @@ public:
         glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
         program.setUniform("u_mvp", proj * view * glm::mat4(1.f));
 
-        glBindTextureUnit(0, texture);
+        glBindTextureUnit(0, model.texture);
         program.setUniform("u_texture", 0);
 
         glBindVertexArray(model.vao);
@@ -118,8 +117,8 @@ public:
 private:
     glWindow window;
     glShader program;
-    GLuint texture;
     Camera camera;
+
     indexed_model model;
 
     // Time variables
