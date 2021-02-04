@@ -6,6 +6,7 @@
 #include <glTexture.h>
 #include <Camera.h>
 #include <RenderObject.h>
+#include <DSA_things.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -88,7 +89,7 @@ public:
         }
 
         std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
-        
+        /*
         program = glShader(shaders);
         texture = texFromImg(TEXTURE_FILENAME);
         VBO = glBuffer(CubeFlat::vertices, sizeof(CubeFlat::vertices), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
@@ -102,6 +103,64 @@ public:
                 VAO
             )
         );
+        */
+       program = glShader(shaders);
+       texture = texFromImg(TEXTURE_FILENAME);
+       GLfloat size[] = {1.0, 1.0, 1.0};
+       vertex vertices[] = {
+            vertex{glm::vec3{-size[0],  size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},
+            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},
+            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},
+            vertex{glm::vec3{size[0], -size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},
+            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},
+            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},
+            vertex{glm::vec3{-size[0],  size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
+            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{-size[0],  size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
+            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
+            vertex{glm::vec3{-size[0],  size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
+            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{size[0],  size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
+            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{-size[0],  size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
+            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
+            vertex{glm::vec3{-size[0],  size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
+            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{size[0], -size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
+            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
+            vertex{glm::vec3{size[0],  size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
+            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
+            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
+            vertex{glm::vec3{-size[0], size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},   
+            vertex{glm::vec3{-size[0], size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},   
+            vertex{glm::vec3{size[0], size[1],   -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},   
+            vertex{glm::vec3{size[0], size[1],    size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},   
+            vertex{glm::vec3{size[0], size[1],   -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},   
+            vertex{glm::vec3{-size[0], size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},   
+            vertex{glm::vec3{size[0], -size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
+            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
+            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
+            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
+            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}}
+        };
+        uint32_t indices[] = {
+            0, 1, 2,
+            3, 4, 5, 
+            6, 7, 8, 
+            9, 10, 11,
+            12, 13, 14, 
+            15, 16, 17,
+            18, 19, 20, 
+            21, 22, 23,
+            24, 25, 26, 
+            27, 28, 29,
+            30, 31, 32, 
+            33, 34, 35
+        };
+        model = upload_indexed_model(vertices, 36, indices, 36);
+
     }
     ~Engine() 
     {
@@ -166,6 +225,7 @@ public:
         glClearColor(1.0, 0.5, 0.5, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /*
         for (RenderObject ob : toRender) {
             ob.getShader().use();
             glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
@@ -180,6 +240,18 @@ public:
             ob.getEBO().bind();
             glDrawElements(GL_TRIANGLES, ob.getEBO().getSize(), GL_UNSIGNED_INT, 0);
         }
+        */
+        program.use();
+        glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
+        glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
+        program.setUniform("u_mvp", proj * view * glm::mat4(1.f));
+
+        glBindTextureUnit(0, texture);
+        program.setUniform("u_texture", 0);
+
+        glBindVertexArray(model.vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.ibo);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         window.swap();
     }
@@ -195,6 +267,8 @@ private:
     // rethonk
     std::vector<RenderObject> toRender;
     Camera camera;
+
+    indexed_model model;
 
      // Time variables
     Uint64 time_init = 0;
