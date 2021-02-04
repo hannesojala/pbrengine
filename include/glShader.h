@@ -43,6 +43,7 @@ public:
         if(!success) {
             glGetProgramInfoLog(gl_name.get(), 512, NULL, infoLog);
             std::cerr << "Error linking shader program:\n" << infoLog << "\n";
+            exit(EXIT_FAILURE);
         }
 
         for (GLuint shader : compiledShaders) {

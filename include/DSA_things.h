@@ -1,10 +1,14 @@
+#pragma once
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
+using namespace glm;
+
 struct vertex {
-    glm::vec3 position;
-    //glm::vec3 normal;
-    glm::vec2 texture;
+    vec3 position;
+    vec3 normal;
+    vec2 texture;
 };
 
 struct indexed_model {
@@ -27,16 +31,15 @@ indexed_model upload_indexed_model(vertex* vertices, int vertex_count, uint32_t*
 
     glEnableVertexArrayAttrib(model.vao, 0);
     glEnableVertexArrayAttrib(model.vao, 1);
-    //glEnableVertexArrayAttrib(model.vao, 2);
+    glEnableVertexArrayAttrib(model.vao, 2);
 
     glVertexArrayAttribFormat(model.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, position));
-    //glVertexArrayAttribFormat(model.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, normal));
-    //glVertexArrayAttribFormat(model.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, texture));
-    glVertexArrayAttribFormat(model.vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, texture));
+    glVertexArrayAttribFormat(model.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, normal));
+    glVertexArrayAttribFormat(model.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, texture));
 
     glVertexArrayAttribBinding(model.vao, 0, 0);
     glVertexArrayAttribBinding(model.vao, 1, 0);
-    //glVertexArrayAttribBinding(model.vao, 2, 0);
+    glVertexArrayAttribBinding(model.vao, 2, 0);
 
     return model;
 }

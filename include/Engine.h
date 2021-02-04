@@ -1,76 +1,19 @@
 #pragma once
 
 #include <glWindow.h>
-#include <glVAO.h>
 #include <Shapes.h>
 #include <glTexture.h>
 #include <Camera.h>
-#include <RenderObject.h>
 #include <DSA_things.h>
+#include <Debug.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-const float MOVESPEED = 5.0;
-const float CAMERASPEED = 2.5;
 
 auto shaders = std::vector<ShaderSrcInfo>{
     {"vert.glsl", GL_VERTEX_SHADER},
     {"frag.glsl", GL_FRAGMENT_SHADER}
 };
-
-auto attributes = std::vector<Attribute>{
-    {"a_position", 3},
-    {"a_uvCoords", 2}
-};
-
-// not mine
-void debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
-{
-    // To shut the compiler up about unused param warnings. 
-    // I do not plan to use them but they are required for this callback function.
-    (void)length;
-    (void)user_param;
-
-	auto const src_str = [source]() {
-		switch (source)
-		{
-		case GL_DEBUG_SOURCE_API: return "API";
-		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
-		case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
-		case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
-		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
-		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
-		}
-        return "This shouldn't happen!";
-	}();
-
-	auto const type_str = [type]() {
-		switch (type)
-		{
-		case GL_DEBUG_TYPE_ERROR: return "ERROR";
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
-		case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
-		case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
-		case GL_DEBUG_TYPE_MARKER: return "MARKER";
-		case GL_DEBUG_TYPE_OTHER: return "OTHER";
-		}
-        return "This shouldn't happen!";
-	}();
-
-	auto const severity_str = [severity]() {
-		switch (severity) {
-		case GL_DEBUG_SEVERITY_NOTIFICATION: return "NOTIFICATION";
-		case GL_DEBUG_SEVERITY_LOW: return "LOW";
-		case GL_DEBUG_SEVERITY_MEDIUM: return "MEDIUM";
-		case GL_DEBUG_SEVERITY_HIGH: return "HIGH";
-		}
-        return "This shouldn't happen!";
-	}();
-
-	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
-}
 
 class Engine {
 public:
@@ -89,77 +32,11 @@ public:
         }
 
         std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
-        /*
+
         program = glShader(shaders);
         texture = texFromImg(TEXTURE_FILENAME);
-        VBO = glBuffer(CubeFlat::vertices, sizeof(CubeFlat::vertices), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-        EBO = glBuffer(CubeFlat::indices, sizeof(CubeFlat::indices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-        VAO = glVAO(attributes, program);
-        toRender.push_back(
-            RenderObject(
-                program,
-                VBO,
-                EBO,
-                VAO
-            )
-        );
-        */
-       program = glShader(shaders);
-       texture = texFromImg(TEXTURE_FILENAME);
-       GLfloat size[] = {1.0, 1.0, 1.0};
-       vertex vertices[] = {
-            vertex{glm::vec3{-size[0],  size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},
-            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},
-            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},
-            vertex{glm::vec3{size[0], -size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},
-            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},
-            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},
-            vertex{glm::vec3{-size[0],  size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
-            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{-size[0],  size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
-            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
-            vertex{glm::vec3{-size[0],  size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
-            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{size[0],  size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
-            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{-size[0],  size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
-            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
-            vertex{glm::vec3{-size[0],  size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
-            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{size[0], -size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
-            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
-            vertex{glm::vec3{size[0],  size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
-            vertex{glm::vec3{size[0],  size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
-            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
-            vertex{glm::vec3{-size[0], size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},   
-            vertex{glm::vec3{-size[0], size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},   
-            vertex{glm::vec3{size[0], size[1],   -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},   
-            vertex{glm::vec3{size[0], size[1],    size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},   
-            vertex{glm::vec3{size[0], size[1],   -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},   
-            vertex{glm::vec3{-size[0], size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},   
-            vertex{glm::vec3{size[0], -size[1],   size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 1.0}},  
-            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}},  
-            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{-size[0], -size[1], -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 0.0}},  
-            vertex{glm::vec3{size[0], -size[1],  -size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{0.0, 0.0}},  
-            vertex{glm::vec3{-size[0], -size[1],  size[2]}, /*glm::vec3{0.0, 0.0, 0.0},*/ glm::vec2{1.0, 1.0}}
-        };
-        uint32_t indices[] = {
-            0, 1, 2,
-            3, 4, 5, 
-            6, 7, 8, 
-            9, 10, 11,
-            12, 13, 14, 
-            15, 16, 17,
-            18, 19, 20, 
-            21, 22, 23,
-            24, 25, 26, 
-            27, 28, 29,
-            30, 31, 32, 
-            33, 34, 35
-        };
-        model = upload_indexed_model(vertices, 36, indices, 36);
+       
+        model = upload_indexed_model(CubeFlat::vertices, 36, CubeFlat::indices, 36);
 
     }
     ~Engine() 
@@ -206,18 +83,17 @@ public:
     }
 
     void update() {
-        // Access keys with keystate[SDL_SCANCODE(key)]
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
-        if(keystate[SDL_SCANCODE_W])        camera.position += float(dt_seconds) * MOVESPEED * camera.forward;
-        if(keystate[SDL_SCANCODE_A])        camera.position -= float(dt_seconds) * MOVESPEED * camera.right;
-        if(keystate[SDL_SCANCODE_S])        camera.position -= float(dt_seconds) * MOVESPEED * camera.forward;
-        if(keystate[SDL_SCANCODE_D])        camera.position += float(dt_seconds) * MOVESPEED * camera.right;
-        if(keystate[SDL_SCANCODE_UP])       camera.pitchView(float(dt_seconds) * CAMERASPEED);
-        if(keystate[SDL_SCANCODE_DOWN])     camera.pitchView(float(dt_seconds) *-CAMERASPEED);
-        if(keystate[SDL_SCANCODE_LEFT])     camera.yawView(float(dt_seconds)   * CAMERASPEED);
-        if(keystate[SDL_SCANCODE_RIGHT])    camera.yawView(float(dt_seconds)   *-CAMERASPEED);
-        if(keystate[SDL_SCANCODE_Q])        camera.rollView(float(dt_seconds)  * CAMERASPEED);
-        if(keystate[SDL_SCANCODE_E])        camera.rollView(float(dt_seconds)  *-CAMERASPEED);
+        if(keystate[SDL_SCANCODE_W])        camera.position += float(dt_seconds) * 5.0f * camera.forward;
+        if(keystate[SDL_SCANCODE_A])        camera.position -= float(dt_seconds) * 5.0f * camera.right;
+        if(keystate[SDL_SCANCODE_S])        camera.position -= float(dt_seconds) * 5.0f * camera.forward;
+        if(keystate[SDL_SCANCODE_D])        camera.position += float(dt_seconds) * 5.0f * camera.right;
+        if(keystate[SDL_SCANCODE_UP])       camera.pitchView(float(dt_seconds) * 2.5f);
+        if(keystate[SDL_SCANCODE_DOWN])     camera.pitchView(float(dt_seconds) *-2.5f);
+        if(keystate[SDL_SCANCODE_LEFT])     camera.yawView(float(dt_seconds)   * 2.5f);
+        if(keystate[SDL_SCANCODE_RIGHT])    camera.yawView(float(dt_seconds)   *-2.5f);
+        if(keystate[SDL_SCANCODE_Q])        camera.rollView(float(dt_seconds)  * 2.5f);
+        if(keystate[SDL_SCANCODE_E])        camera.rollView(float(dt_seconds)  *-2.5f);
     }
 
     void render() {
@@ -225,22 +101,6 @@ public:
         glClearColor(1.0, 0.5, 0.5, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /*
-        for (RenderObject ob : toRender) {
-            ob.getShader().use();
-            glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
-            glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
-            ob.getShader().setUniform("u_mvp", proj * view * ob.modelMat());
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            ob.getShader().setUniform("u_texture", 0);
-
-            ob.getVAO().bind();
-            ob.getEBO().bind();
-            glDrawElements(GL_TRIANGLES, ob.getEBO().getSize(), GL_UNSIGNED_INT, 0);
-        }
-        */
         program.use();
         glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
         glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
@@ -257,20 +117,12 @@ public:
     }
 private:
     glWindow window;
-    // This should be in some data struct with render objects grabbing references to elements
     glShader program;
-    // These should be owned by the render object, maybe not so in direct state access
-    glBuffer VBO;
-    glBuffer EBO;
-    glVAO VAO;
     GLuint texture;
-    // rethonk
-    std::vector<RenderObject> toRender;
     Camera camera;
-
     indexed_model model;
 
-     // Time variables
+    // Time variables
     Uint64 time_init = 0;
     Uint64 time_prev = 0;
     Uint64 time_curr = 0;

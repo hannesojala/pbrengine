@@ -3,37 +3,39 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+using namespace glm;
+
 // Spaceship style relative camera
 class Camera {
 public:
     Camera(){}
 
-    Camera(glm::vec3 position, glm::vec3 forward, glm::vec3 up, float fov):
+    Camera(vec3 position, vec3 forward, vec3 up, float fov):
         position(position), 
         forward(forward), 
         up(up),
-        right(glm::cross(up, forward)), 
+        right(cross(up, forward)), 
         fov(fov){}
 
-    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 forward  = glm::vec3(0.0f, 0.0f,-1.0f);
-    glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 right    = glm::vec3(1.0f, 0.0f, 0.0f);
+    vec3 position = vec3(0.0f, 0.0f, 0.0f);
+    vec3 forward  = vec3(0.0f, 0.0f,-1.0f);
+    vec3 up       = vec3(0.0f, 1.0f, 0.0f);
+    vec3 right    = vec3(1.0f, 0.0f, 0.0f);
 
-    float fov = glm::radians(90.f);
+    float fov = radians(90.f);
 
     void pitchView(float radians) {
-        forward = glm::normalize((forward * cos(radians)) + (up * sin(radians)));
-        up = glm::normalize(glm::cross(right, forward));
+        forward = normalize((forward * cos(radians)) + (up * sin(radians)));
+        up = normalize(cross(right, forward));
     }
 
     void yawView(float radians) {
-        right = glm::normalize((right * cos(radians)) + (forward * sin(radians)));
-        forward = glm::normalize(glm::cross(up, right));
+        right = normalize((right * cos(radians)) + (forward * sin(radians)));
+        forward = normalize(cross(up, right));
     }
     
     void rollView(float radians) {
-        right = glm::normalize((right * cos(radians)) + (up * sin(radians)));
-        up = glm::normalize(glm::cross(right, forward));
+        right = normalize((right * cos(radians)) + (up * sin(radians)));
+        up = normalize(cross(right, forward));
     }
 };

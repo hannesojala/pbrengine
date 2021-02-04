@@ -1,52 +1,49 @@
 #include <glad/glad.h>
+#include <DSA_things.h>
+
+using namespace glm;
 
 namespace CubeFlat {
     GLfloat size[] = {1.0, 1.0, 1.0};
-    GLfloat vertices[] = {
-        -size[0],  size[1],  size[2], 0.0, 1.0,
-        -size[0], -size[1],  size[2], 0.0, 0.0,
-        size[0],  size[1],  size[2], 1.0, 1.0,
-        size[0], -size[1],  size[2], 1.0, 0.0,
-        size[0],  size[1],  size[2], 1.0, 1.0,
-        -size[0], -size[1],  size[2], 0.0, 0.0,
-
-        -size[0],  size[1], -size[2], 0.0, 1.0,  
-        -size[0], -size[1], -size[2], 0.0, 0.0,  
-        -size[0],  size[1],  size[2], 1.0, 1.0,  
-        -size[0], -size[1],  size[2], 1.0, 0.0,  
-        -size[0],  size[1],  size[2], 1.0, 1.0,  
-        -size[0], -size[1], -size[2], 0.0, 0.0,  
-        
-        size[0],  size[1], -size[2], 0.0, 1.0,  
-        size[0], -size[1], -size[2], 0.0, 0.0,  
-        -size[0],  size[1], -size[2], 1.0, 1.0,  
-        -size[0], -size[1], -size[2], 1.0, 0.0,  
-        -size[0],  size[1], -size[2], 1.0, 1.0,  
-        size[0], -size[1], -size[2], 0.0, 0.0,  
-        
-        size[0], -size[1],  size[2], 0.0, 0.0,  
-        size[0], -size[1], -size[2], 1.0, 0.0,  
-        size[0],  size[1],  size[2], 0.0, 1.0,  
-        size[0],  size[1], -size[2], 1.0, 1.0,  
-        size[0],  size[1],  size[2], 0.0, 1.0,  
-        size[0], -size[1], -size[2], 1.0, 0.0,  
-        
-        -size[0], size[1], -size[2], 0.0, 1.0,   
-        -size[0], size[1],  size[2], 0.0, 0.0,   
-        size[0], size[1], -size[2], 1.0, 1.0,   
-        size[0], size[1],  size[2], 1.0, 0.0,   
-        size[0], size[1], -size[2], 1.0, 1.0,   
-        -size[0], size[1],  size[2], 0.0, 0.0,   
-        
-        size[0], -size[1],  size[2], 0.0, 1.0,  
-        -size[0], -size[1],  size[2], 1.0, 1.0,  
-        size[0], -size[1], -size[2], 0.0, 0.0,  
-        -size[0], -size[1], -size[2], 1.0, 0.0,  
-        size[0], -size[1], -size[2], 0.0, 0.0,  
-        -size[0], -size[1],  size[2], 1.0, 1.0
-    };
-
-    GLuint indices[] = {
+    vertex vertices[] = {
+        vertex{    vec3{-size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },
+        vertex{    vec3{-size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },
+        vertex{    vec3{ size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },
+        vertex{    vec3{ size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },
+        vertex{    vec3{ size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },
+        vertex{    vec3{-size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },
+        vertex{    vec3{-size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },  
+        vertex{    vec3{-size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{-size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },  
+        vertex{    vec3{-size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },  
+        vertex{    vec3{-size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },  
+        vertex{    vec3{-size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{ size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },  
+        vertex{    vec3{ size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{-size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },  
+        vertex{    vec3{-size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },  
+        vertex{    vec3{-size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },  
+        vertex{    vec3{ size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{ size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{ size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },  
+        vertex{    vec3{ size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },  
+        vertex{    vec3{ size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },  
+        vertex{    vec3{ size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },  
+        vertex{    vec3{ size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },  
+        vertex{    vec3{-size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },   
+        vertex{    vec3{-size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },   
+        vertex{    vec3{ size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },   
+        vertex{    vec3{ size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },   
+        vertex{    vec3{ size[0], size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },   
+        vertex{    vec3{-size[0], size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },   
+        vertex{    vec3{ size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 1.0}    },  
+        vertex{    vec3{-size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    },  
+        vertex{    vec3{ size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{-size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 0.0}    },  
+        vertex{    vec3{ size[0],-size[1],-size[2]},    vec3{0.0, 0.0, 0.0},    vec2{0.0, 0.0}    },  
+        vertex{    vec3{-size[0],-size[1], size[2]},    vec3{0.0, 0.0, 0.0},    vec2{1.0, 1.0}    }
+    };  
+    uint32_t indices[] = {
         0, 1, 2,
         3, 4, 5, 
         6, 7, 8, 

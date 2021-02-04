@@ -24,7 +24,7 @@ GLuint texFromImg(std::string path) {
     glTextureParameteri(ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameteri(ID, GL_TEXTURE_BASE_LEVEL, 0);
-    unsigned int max_mips = log2(std::min(imgSurf->w, imgSurf->h));
+    unsigned int max_mips = std::log2(std::min(imgSurf->w, imgSurf->h));
     glTextureParameteri(ID, GL_TEXTURE_MAX_LEVEL, max_mips);
 
     glTextureStorage2D(ID, max_mips, sized_format, imgSurf->w, imgSurf->h);
