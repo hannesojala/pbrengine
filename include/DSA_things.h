@@ -2,17 +2,23 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <vector>
 
 using namespace glm;
 
 struct vertex {
     vec3 position;
     vec3 normal;
-    vec2 texture;
+    vec2 texture_coord;
 };
 
-struct indexed_model {
+struct mesh {
     GLuint vbo, ibo, vao, texture;
+    mesh* parent;
+};
+
+struct model {
+    std::vector<mesh> meshes;
 };
 
 /* TODO */
@@ -20,8 +26,8 @@ struct indexed_model {
 // Merge ibo and vbo into one buffer
 // Generalize for different attrib layouts (as in deleted code, go to earlier commits, supply struct)
 
-indexed_model upload_indexed_model(vertex* vertices, int vertex_count, uint32_t* indices, int index_count, GLuint texture) {
-    indexed_model model;
+mesh upload_indexed_model(vertex* vertices, int vertex_count, uint32_t* indices, int index_count, GLuint texture) {
+    mesh model;
 
     glCreateBuffers(1, &model.vbo);	
     glNamedBufferStorage(model.vbo, sizeof(vertex)*vertex_count, vertices, GL_DYNAMIC_STORAGE_BIT);
@@ -40,7 +46,7 @@ indexed_model upload_indexed_model(vertex* vertices, int vertex_count, uint32_t*
 
     glVertexArrayAttribFormat(model.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, position));
     glVertexArrayAttribFormat(model.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, normal));
-    glVertexArrayAttribFormat(model.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, texture));
+    glVertexArrayAttribFormat(model.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex, texture_coord));
 
     glVertexArrayAttribBinding(model.vao, 0, 0);
     glVertexArrayAttribBinding(model.vao, 1, 0);

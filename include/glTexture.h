@@ -3,6 +3,8 @@
 #include <cmath>
 #include <string>
 
+// this is complete garbage delete it
+
 GLuint texFromImg(std::string path) {
     IMG_Init(~0);
     SDL_Surface* imgSurf = IMG_Load(path.c_str());

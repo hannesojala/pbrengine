@@ -29,18 +29,17 @@ public:
             glEnable(GL_DEBUG_OUTPUT);
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             glDebugMessageCallback(debug_message_callback, nullptr);
+            std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
         }
-
-        std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
 
         program = glShader(shaders);
        
-        model = upload_indexed_model(CubeFlat::vertices, 36, CubeFlat::indices, 36, texFromImg(TEXTURE_FILENAME));
+        models.push_back(upload_indexed_model(CubeFlat::vertices, 36, CubeFlat::indices, 36, texFromImg(TEXTURE_FILENAME)));
 
     }
     ~Engine() 
     {
-        glDeleteTextures(1, &(model.texture));
+        for (mesh model : models) glDeleteTextures(1, &(model.texture));
     }
 
     void startFrame() {
@@ -105,12 +104,13 @@ public:
         glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
         program.setUniform("u_mvp", proj * view * glm::mat4(1.f));
 
-        glBindTextureUnit(0, model.texture);
-        program.setUniform("u_texture", 0);
-
-        glBindVertexArray(model.vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.ibo);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        for (mesh model : models) {
+            glBindTextureUnit(0, model.texture);
+            program.setUniform("u_texture", 0);
+            glBindVertexArray(model.vao);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.ibo);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
 
         window.swap();
     }
@@ -119,7 +119,7 @@ private:
     glShader program;
     Camera camera;
 
-    indexed_model model;
+    std::vector<mesh> models;
 
     // Time variables
     Uint64 time_init = 0;

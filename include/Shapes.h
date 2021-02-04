@@ -1,7 +1,12 @@
 #include <glad/glad.h>
 #include <DSA_things.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 using namespace glm;
+
+
 
 namespace CubeFlat {
     GLfloat size[] = {1.0, 1.0, 1.0};
