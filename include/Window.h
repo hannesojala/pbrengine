@@ -6,12 +6,12 @@
 #include <string>
 #include <vector>
 
-#include <glShader.h>
+#include <Shader.h>
 
-class glWindow {
+class Window {
 public:
     // memory leak note: seems that simply SDL_Init() followed by SDL_Quit() causes a memory leak of 80kb!
-    glWindow(int width, int height, std::string title) {
+    Window(int width, int height, std::string title) {
         SDL_Init(SDL_INIT_VIDEO);
         Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
         pWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags);
@@ -28,7 +28,7 @@ public:
             std::cerr << "Failed to initialize GLAD: " << SDL_GetError() << "\n";
         glViewport(0, 0, width, height);
     }
-    ~glWindow() {
+    ~Window() {
         SDL_GL_DeleteContext(glContext);
         SDL_DestroyWindow(pWindow);
         SDL_Quit();

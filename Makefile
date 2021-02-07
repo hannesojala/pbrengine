@@ -5,7 +5,7 @@ BIN     := bin
 SRC     := src
 INCLUDE := include
 LIB     := lib
-LIBRARIES   := -lSDL2 -ldl -lSDL2_image
+LIBRARIES   := -lSDL2 -ldl -lSDL2_image -lassimp
 EXECUTABLE  := pbrengine
 
 all: $(BIN)/$(EXECUTABLE)

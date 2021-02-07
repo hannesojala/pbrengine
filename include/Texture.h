@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL2/SDL_image.h>
 #include <glad/glad.h>
 #include <cmath>

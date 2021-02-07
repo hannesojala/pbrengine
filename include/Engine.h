@@ -1,8 +1,7 @@
 #pragma once
 
-#include <glWindow.h>
-#include <Shapes.h>
-#include <glTexture.h>
+#include <Window.h>
+#include <Texture.h>
 #include <Camera.h>
 #include <DSA_things.h>
 #include <Debug.h>
@@ -18,7 +17,7 @@ auto shaders = std::vector<ShaderSrcInfo>{
 class Engine {
 public:
     Engine(int width, int height) :
-        window(glWindow(width, height, "PBR Engine")),
+        window(Window(width, height, "PBR Engine")),
         camera(Camera()),
         running(true)
     {
@@ -32,14 +31,12 @@ public:
             std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
         }
 
-        program = glShader(shaders);
-       
-        models.push_back(upload_indexed_model(CubeFlat::vertices, 36, CubeFlat::indices, 36, texFromImg(TEXTURE_FILENAME)));
-
+        program = Shader(shaders);
+        model = import_obj("suz_subdiv_1.obj");
     }
     ~Engine() 
     {
-        for (mesh model : models) glDeleteTextures(1, &(model.texture));
+        for (auto mesh : model.meshes) glDeleteTextures(1, &(mesh.texture));
     }
 
     void startFrame() {
@@ -104,22 +101,22 @@ public:
         glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
         program.setUniform("u_mvp", proj * view * glm::mat4(1.f));
 
-        for (mesh model : models) {
-            glBindTextureUnit(0, model.texture);
+        for (Mesh mesh : model.meshes) {
+            glBindTextureUnit(0, mesh.texture);
             program.setUniform("u_texture", 0);
-            glBindVertexArray(model.vao);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.ibo);
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(mesh.vao);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
+            glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
         }
 
         window.swap();
     }
 private:
-    glWindow window;
-    glShader program;
+    Window window;
+    Shader program;
     Camera camera;
 
-    std::vector<mesh> models;
+    Model model;
 
     // Time variables
     Uint64 time_init = 0;

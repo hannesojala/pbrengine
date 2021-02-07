@@ -3,21 +3,21 @@
 #include <glad/glad.h>
 #include <utility>
 
-class glName {
+class GLName {
 public:
-    glName() = default;
+    GLName() = default;
 
-    glName(GLuint ID) : ID(ID) {}
+    GLName(GLuint ID) : ID(ID) {}
 
     // Copy Ctor and Copy assignment = delete
-    glName(const glName& other) = delete;
-    glName& operator=(const glName& other) = delete;
+    GLName(const GLName& other) = delete;
+    GLName& operator=(const GLName& other) = delete;
 
     // Move Ctor and Copy assignment
-    glName(glName&& other) noexcept : 
+    GLName(GLName&& other) noexcept : 
         ID(std::exchange(other.ID, 0)) {}
 
-    glName& operator=(glName&& other) noexcept {
+    GLName& operator=(GLName&& other) noexcept {
         std::swap(ID, other.ID);
         return *this;
     }

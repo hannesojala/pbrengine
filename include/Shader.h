@@ -11,17 +11,17 @@
 #include <sstream>
 #include <iostream>
 
-#include <glName.h>
+#include <GLName.h>
 
 struct ShaderSrcInfo {
     std::string path;
     GLenum type;
 };
 
-class glShader {
+class Shader {
 public:
-    glShader() = default;
-    glShader(const std::vector<ShaderSrcInfo> & sources) : gl_name(glName(glCreateProgram()))
+    Shader() = default;
+    Shader(const std::vector<ShaderSrcInfo> & sources) : gl_name(GLName(glCreateProgram()))
     {
         std::vector<GLuint> compiledShaders;
 
@@ -51,13 +51,13 @@ public:
         }
     }
 
-    ~glShader() {
+    ~Shader() {
         glDeleteProgram(gl_name.get());
     }
 
     // Default move ctor and operator
-    glShader(glShader &&other) = default;
-    glShader &operator=(glShader &&other) = default;
+    Shader(Shader &&other) = default;
+    Shader &operator=(Shader &&other) = default;
 
 private:
     std::string openSource(std::string path) {
@@ -82,7 +82,7 @@ private:
         return shader;
     }
 
-    glName gl_name;
+    GLName gl_name;
 public:
     GLuint getID() const {
         return gl_name.get();
