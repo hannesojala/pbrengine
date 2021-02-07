@@ -15,7 +15,6 @@ int main(int argc, char** argv) {
         if (std::strcmp(arg, "-d") == 0) IN_DEBUG_MODE = true;
         else TEXTURE_FILENAME = arg;
     }
-    SDL_Init(SDL_INIT_VIDEO); SDL_Quit();
     Engine engine(1600, 900);
     while(engine.running) {
         engine.startFrame();
