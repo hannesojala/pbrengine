@@ -50,12 +50,12 @@ public:
             switch(window.getEventType()) {
             case SDL_KEYDOWN :
                 switch(window.event.key.keysym.sym) {
-                    case SDLK_p :
-                        std::cout << "FPS: " << 1/dt_seconds << "\n";
-                        break;
-                    case SDLK_v :
-                        window.setSwap(!window.getSwap());
-                        break;
+                case SDLK_p :
+                    std::cout << "FPS: " << 1/dt_seconds << "\n";
+                    break;
+                case SDLK_v :
+                    window.setSwap(!window.getSwap());
+                    break;
                 }
                 break;
             case SDL_QUIT :
