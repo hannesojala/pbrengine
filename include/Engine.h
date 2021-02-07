@@ -35,8 +35,14 @@ public:
         model = import_obj("suz_subdiv_1.obj");
     }
     ~Engine() 
-    {
-        for (auto mesh : model.meshes) glDeleteTextures(1, &(mesh.texture));
+    {   
+        glDeleteProgram(program.getID());
+        for (auto mesh : model.meshes) {
+            glDeleteTextures(1, &(mesh.texture));
+            glDeleteBuffers(1, &(mesh.vbo));
+            glDeleteBuffers(1, &(mesh.ibo));
+            glDeleteVertexArrays(1, &(mesh.vao));
+        }
     }
 
     void startFrame() {

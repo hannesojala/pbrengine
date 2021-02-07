@@ -11,8 +11,6 @@
 #include <sstream>
 #include <iostream>
 
-#include <GLName.h>
-
 struct ShaderSrcInfo {
     std::string path;
     GLenum type;
@@ -21,7 +19,7 @@ struct ShaderSrcInfo {
 class Shader {
 public:
     Shader() = default;
-    Shader(const std::vector<ShaderSrcInfo> & sources) : gl_name(GLName(glCreateProgram()))
+    Shader(const std::vector<ShaderSrcInfo> & sources) : gl_name(glCreateProgram())
     {
         std::vector<GLuint> compiledShaders;
 
@@ -32,16 +30,16 @@ public:
         }
 
         for (GLuint shader : compiledShaders) {
-            glAttachShader(gl_name.get(), shader);
+            glAttachShader(gl_name, shader);
         }
 
-        glLinkProgram(gl_name.get());
+        glLinkProgram(gl_name);
 
         int success;
         char infoLog[512];
-        glGetProgramiv(gl_name.get(), GL_LINK_STATUS, &success);
+        glGetProgramiv(gl_name, GL_LINK_STATUS, &success);
         if(!success) {
-            glGetProgramInfoLog(gl_name.get(), 512, NULL, infoLog);
+            glGetProgramInfoLog(gl_name, 512, NULL, infoLog);
             std::cerr << "Error linking shader program:\n" << infoLog << "\n";
             exit(EXIT_FAILURE);
         }
@@ -49,10 +47,6 @@ public:
         for (GLuint shader : compiledShaders) {
             glDeleteShader(shader);
         }
-    }
-
-    ~Shader() {
-        glDeleteProgram(gl_name.get());
     }
 
     // Default move ctor and operator
@@ -82,14 +76,14 @@ private:
         return shader;
     }
 
-    GLName gl_name;
+    GLuint gl_name;
 public:
     GLuint getID() const {
-        return gl_name.get();
+        return gl_name;
     }
 
     void setUniform(std::string uniform, glm::vec4 value) {
-        GLint location = glGetUniformLocation(gl_name.get(), uniform.c_str());
+        GLint location = glGetUniformLocation(gl_name, uniform.c_str());
         if (location < 0) {
             std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
             return;
@@ -98,7 +92,7 @@ public:
     }
 
     void setUniform(std::string uniform, glm::mat4 value) {
-        GLint location = glGetUniformLocation(gl_name.get(), uniform.c_str());
+        GLint location = glGetUniformLocation(gl_name, uniform.c_str());
         if (location < 0) {
             std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
             return;
@@ -107,7 +101,7 @@ public:
     }
 
     void setUniform(std::string uniform, GLuint value) {
-        GLint location = glGetUniformLocation(gl_name.get(), uniform.c_str());
+        GLint location = glGetUniformLocation(gl_name, uniform.c_str());
         if (location < 0) {
             std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
             return;
@@ -116,6 +110,6 @@ public:
     }
 
     void use() {
-        glUseProgram(gl_name.get());
+        glUseProgram(gl_name);
     }
 };
