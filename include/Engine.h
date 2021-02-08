@@ -62,6 +62,9 @@ public:
                 case SDLK_v :
                     window.setSwap(!window.getSwap());
                     break;
+                case SDLK_F11 :
+                    window.toggleFullscreen();
+                    break;
                 }
                 break;
             case SDL_QUIT :

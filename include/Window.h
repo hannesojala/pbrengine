@@ -35,6 +35,11 @@ public:
         SDL_Quit();
     }
 
+    void toggleFullscreen() {
+        if (SDL_GetWindowFlags(p_window) & SDL_WINDOW_FULLSCREEN_DESKTOP) SDL_SetWindowFullscreen(p_window, 0);
+        else SDL_SetWindowFullscreen(p_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+
     void swap() 
         { SDL_GL_SwapWindow(p_window); }
 
