@@ -14,7 +14,7 @@ using namespace glm;
 
 struct vertex_t {
     vec3 position, normal;
-    vec2 texture_coord;
+    vec2 tex_coord;
 };
 
 struct Mesh {
@@ -24,6 +24,7 @@ struct Mesh {
 
 struct Model {
     std::vector<Mesh> meshes;
+    std::vector<Model> children;
 };
 
 Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> indices, GLuint texture) {
@@ -46,7 +47,7 @@ Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> ind
 
     glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex_t, position));
     glVertexArrayAttribFormat(mesh.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vertex_t, normal));
-    glVertexArrayAttribFormat(mesh.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex_t, texture_coord));
+    glVertexArrayAttribFormat(mesh.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex_t, tex_coord));
 
     glVertexArrayAttribBinding(mesh.vao, 0, 0);
     glVertexArrayAttribBinding(mesh.vao, 1, 0);
@@ -58,17 +59,9 @@ Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> ind
     return mesh;
 }
 
-Model import_obj(const std::string& fname) {
+Model node_trav(aiNode* node, const aiScene* scene) {
     Model model;
-    Assimp::Importer importer;
-    
-    const aiScene* scene = importer.ReadFile(fname,
-        aiProcess_CalcTangentSpace       |
-        aiProcess_Triangulate            |
-        aiProcess_JoinIdenticalVertices  |
-        aiProcess_SortByPType);
-
-    for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         auto ai_mesh = scene->mMeshes[i];
         std::vector<vertex_t> vertices;
         std::vector<GLuint> indices;
@@ -91,9 +84,24 @@ Model import_obj(const std::string& fname) {
         }
 
         // todo: attempt to get tex from .mtl file
-        auto texture = texFromImg(fname + ".png");
+        // auto texture = texFromImg(fname + ".png");
+        auto texture = texFromImg("maze.png");
         auto mesh = upload_indexed_mesh(vertices, indices, texture);
         model.meshes.push_back(mesh);
     }
+    for (unsigned int i = 0; i < node->mNumChildren; i++) model.children.push_back(node_trav(node->mChildren[i], scene));
     return model;
+}
+
+Model import_obj(const std::string& fname) {
+    Model model;
+    Assimp::Importer importer;
+    
+    const aiScene* scene = importer.ReadFile(fname,
+        aiProcess_CalcTangentSpace       |
+        aiProcess_Triangulate            |
+        aiProcess_JoinIdenticalVertices  |
+        aiProcess_SortByPType);
+
+    return node_trav(scene->mRootNode, scene);
 }

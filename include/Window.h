@@ -15,28 +15,28 @@ public:
         SDL_Init(SDL_INIT_VIDEO);
         auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
 
-        pWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags);
-        if (!pWindow) std::cerr << "Could not create window!" << SDL_GetError() << "\n";
+        p_window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags);
+        if (!p_window) std::cerr << "Could not create window!" << SDL_GetError() << "\n";
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-        glContext = SDL_GL_CreateContext(pWindow);
-        SDL_GL_MakeCurrent(pWindow, glContext);
-        if (!glContext) std::cerr << "Context could not be created: " << SDL_GetError() << "\n";
+        gl_context = SDL_GL_CreateContext(p_window);
+        SDL_GL_MakeCurrent(p_window, gl_context);
+        if (!gl_context) std::cerr << "Context could not be created: " << SDL_GetError() << "\n";
         if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress)) std::cerr << "Failed to initialize GLAD: " << SDL_GetError() << "\n";
         
         glViewport(0, 0, width, height);
     }
     ~Window() {
-        SDL_GL_DeleteContext(glContext);
-        SDL_DestroyWindow(pWindow);
+        SDL_GL_DeleteContext(gl_context);
+        SDL_DestroyWindow(p_window);
         SDL_Quit();
     }
 
     void swap() 
-        { SDL_GL_SwapWindow(pWindow); }
+        { SDL_GL_SwapWindow(p_window); }
 
     void setSwap(int mode) 
         { SDL_GL_SetSwapInterval(mode); }
@@ -45,7 +45,7 @@ public:
         { return SDL_GL_GetSwapInterval(); }
 
     void getSize(int& width, int& height) 
-        { SDL_GetWindowSize(pWindow, &width, &height); }
+        { SDL_GetWindowSize(p_window, &width, &height); }
 
     int pollEvents() 
         { return SDL_PollEvent(&event); }
@@ -58,13 +58,13 @@ public:
 
     float getAspect() {
         int width, height;
-        SDL_GetWindowSize(pWindow, &width, &height);
+        SDL_GetWindowSize(p_window, &width, &height);
         return float(width)/float(height);
     }
 
     SDL_Event event;
     
 private:
-    SDL_Window* pWindow;
-    SDL_GLContext glContext;
+    SDL_Window* p_window;
+    SDL_GLContext gl_context;
 };

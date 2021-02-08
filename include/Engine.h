@@ -32,7 +32,7 @@ public:
         }
 
         program = create_shader(shaders);
-        model = import_obj("suz_subdiv_1.obj");
+        model = import_obj("giant.obj");
     }
 
     ~Engine() {   
@@ -97,16 +97,8 @@ public:
         if(keystate[SDL_SCANCODE_E])        camera.rollView(float(dt_seconds)  *-2.5f);
     }
 
-    void render() {
-
-        glClearColor(0.5, 0.5, 0.5, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glUseProgram(program);
-        auto proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
-        auto view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
-        setUniform(program, "u_mvp", proj * view * glm::mat4(1.f));
-
+    void renderModel(Model model, glm::mat4 proj_m_view) {
+        setUniform(program, "u_mvp", proj_m_view * glm::mat4(1.f));
         for (Mesh mesh : model.meshes) {
             glBindTextureUnit(0, mesh.texture);
             setUniform(program, "u_texture", 0);
@@ -114,6 +106,18 @@ public:
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
             glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
         }
+        for (Model child : model.children) renderModel(child, proj_m_view); 
+    }
+
+    void render() {
+
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(program);
+        auto proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
+        auto view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
+        renderModel(model, proj * view);
 
         window.swap();
     }
@@ -124,10 +128,11 @@ private:
 
     Model model;
 
-    Uint64 time_init = 0;
-    Uint64 time_prev = 0;
-    Uint64 time_curr = 0;
-    double dt_seconds = 0.0;
+    Uint64 time_init  = 0,
+           time_prev  = 0,
+           time_curr  = 0;
+    double dt_seconds = 0;
+
 public:
     bool running;
 };
