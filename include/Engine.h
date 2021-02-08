@@ -32,7 +32,7 @@ public:
         }
 
         program = create_shader(shaders);
-        model = import_obj("IronGiant.obj");
+        model = import_obj("helm.obj");
     }
 
     ~Engine() {   

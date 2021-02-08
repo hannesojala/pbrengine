@@ -61,7 +61,9 @@ Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> ind
 
 Model node_trav(aiNode* node, const aiScene* scene) {
     Model model;
+    std::cout << "Model: " << "\n";
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        std::cout << "  Mesh " << i << ": " << "\n";
         auto ai_mesh = scene->mMeshes[i];
         std::vector<vertex_t> vertices;
         std::vector<GLuint> indices;
@@ -79,16 +81,20 @@ Model node_trav(aiNode* node, const aiScene* scene) {
             vertices.push_back({
                 {pos.x, pos.y, pos.z},
                 {nrm.x, nrm.y, nrm.z},
-                {txc.x, txc.y} // consider if flipped (ogl vs dx)
+                {txc.x, txc.y}
             });
         }
 
-        std::string texname = std::string(scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str());
-        auto texture = texFromImg(texname + ".png");
+        std::string texname = std::string(scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str()) + ".png";
+        std::cout << "      Material name: " << texname << "\n";
+        auto texture = texFromImg(texname);
         auto mesh = upload_indexed_mesh(vertices, indices, texture);
         model.meshes.push_back(mesh);
     }
-    for (unsigned int i = 0; i < node->mNumChildren; i++) model.children.push_back(node_trav(node->mChildren[i], scene));
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        std::cout << "Child " << i << ": " << "\n";
+        model.children.push_back(node_trav(node->mChildren[i], scene));
+    }
     return model;
 }
 
@@ -97,10 +103,8 @@ Model import_obj(const std::string& filename) {
     Assimp::Importer importer;
     
     const aiScene* scene = importer.ReadFile(filename,
-        aiProcess_CalcTangentSpace       |
-        aiProcess_Triangulate            |
-        aiProcess_JoinIdenticalVertices  |
-        aiProcess_SortByPType);
+        aiProcess_FlipUVs | aiProcess_Triangulate);
+    std::cout << "Scene total meshes: " << scene->mNumMeshes << "\n";
 
     return node_trav(scene->mRootNode, scene);
 }
