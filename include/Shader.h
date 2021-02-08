@@ -61,10 +61,10 @@ GLuint create_shader(const std::vector<ShaderSrcInfo>& sources) {
 }
 
 bool locErr(GLint location, const std::string& name) {
-        if (location >= 0) return false;
-        std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
-        return true;
-    }
+    if (location >= 0) return false;
+    std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
+    return true;
+}
 
 void setUniform(GLuint program, std::string uniform, glm::vec4 value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());

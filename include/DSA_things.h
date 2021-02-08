@@ -83,9 +83,8 @@ Model node_trav(aiNode* node, const aiScene* scene) {
             });
         }
 
-        // todo: attempt to get tex from .mtl file
-        // auto texture = texFromImg(fname + ".png");
-        auto texture = texFromImg("maze.png");
+        std::string texname = std::string(scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str());
+        auto texture = texFromImg(texname + ".png");
         auto mesh = upload_indexed_mesh(vertices, indices, texture);
         model.meshes.push_back(mesh);
     }
@@ -93,11 +92,11 @@ Model node_trav(aiNode* node, const aiScene* scene) {
     return model;
 }
 
-Model import_obj(const std::string& fname) {
+Model import_obj(const std::string& filename) {
     Model model;
     Assimp::Importer importer;
     
-    const aiScene* scene = importer.ReadFile(fname,
+    const aiScene* scene = importer.ReadFile(filename,
         aiProcess_CalcTangentSpace       |
         aiProcess_Triangulate            |
         aiProcess_JoinIdenticalVertices  |
