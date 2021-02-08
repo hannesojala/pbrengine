@@ -31,13 +31,12 @@ public:
             std::cout << "Using: " << glGetString(GL_RENDERER) << "\n";
         }
 
-        program = Shader(shaders);
+        program = create_shader(shaders);
         model = import_obj("suz_subdiv_1.obj");
     }
 
-    ~Engine() 
-    {   
-        glDeleteProgram(program.getID());
+    ~Engine() {   
+        glDeleteProgram(program);
         for (auto mesh : model.meshes) {
             glDeleteTextures(1, &(mesh.texture));
             glDeleteBuffers(1, &(mesh.vbo));
@@ -103,14 +102,14 @@ public:
         glClearColor(0.5, 0.5, 0.5, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        program.use();
+        glUseProgram(program);
         auto proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
         auto view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
-        program.setUniform("u_mvp", proj * view * glm::mat4(1.f));
+        setUniform(program, "u_mvp", proj * view * glm::mat4(1.f));
 
         for (Mesh mesh : model.meshes) {
             glBindTextureUnit(0, mesh.texture);
-            program.setUniform("u_texture", 0);
+            setUniform(program, "u_texture", 0);
             glBindVertexArray(mesh.vao);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
             glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
@@ -120,12 +119,11 @@ public:
     }
 private:
     Window window;
-    Shader program;
+    GLuint program;
     Camera camera;
 
     Model model;
 
-    // Time variables
     Uint64 time_init = 0;
     Uint64 time_prev = 0;
     Uint64 time_curr = 0;
