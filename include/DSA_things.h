@@ -13,15 +13,13 @@
 using namespace glm;
 
 struct vertex_t {
-    vec3 position;
-    vec3 normal;
+    vec3 position, normal;
     vec2 texture_coord;
 };
 
 struct Mesh {
     GLuint vbo, ibo, vao, texture;
     GLuint num_indices;
-    //mesh* parent;
 };
 
 struct Model {
@@ -32,10 +30,10 @@ Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> ind
     Mesh mesh;
 
     glCreateBuffers(1, &mesh.vbo);	
-    glNamedBufferStorage(mesh.vbo, sizeof(vertex_t)*vertices.size(), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(mesh.vbo, sizeof(vertex_t) * vertices.size(), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glCreateBuffers(1, &mesh.ibo);
-    glNamedBufferStorage(mesh.ibo, sizeof(GLuint)*indices.size(), indices.data(), GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(mesh.ibo, sizeof(GLuint) * indices.size(), indices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glCreateVertexArrays(1, &mesh.vao);
 
@@ -61,37 +59,40 @@ Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> ind
 }
 
 Model import_obj(const std::string& fname) {
+    Model model;
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile( fname,
+    
+    const aiScene* scene = importer.ReadFile(fname,
         aiProcess_CalcTangentSpace       |
         aiProcess_Triangulate            |
         aiProcess_JoinIdenticalVertices  |
         aiProcess_SortByPType);
 
-    Model model;
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
         auto ai_mesh = scene->mMeshes[i];
         std::vector<vertex_t> vertices;
         std::vector<GLuint> indices;
+        indices.reserve(3 * ai_mesh->mNumFaces);
+
         for (unsigned int f = 0; f < ai_mesh->mNumFaces; f++) {
-            aiFace face = ai_mesh->mFaces[f];
-            indices.push_back(face.mIndices[0]);
-            indices.push_back(face.mIndices[1]);
-            indices.push_back(face.mIndices[2]);
+            auto fidxs = ai_mesh->mFaces[f].mIndices;
+            indices.insert(indices.end(), {fidxs[0], fidxs[1], fidxs[2]});
         }
+
         for (unsigned int n = 0; n < ai_mesh->mNumVertices; n++) {
-            aiVector3D pos = ai_mesh->mVertices[n];
-            aiVector3D nrm = ai_mesh->mNormals[n];
-            aiVector3D txc = ai_mesh->mTextureCoords[0][n];
-            vertex_t vert = {
-                vec3{pos.x, pos.y, pos.z},
-                vec3{nrm.x, nrm.y, nrm.z},
-                vec2{txc.x, txc.y} // consider if flipped (ogl vs dx)
-            };
-            vertices.push_back(vert);
+            auto pos = ai_mesh->mVertices[n],
+                 nrm = ai_mesh->mNormals[n],
+                 txc = ai_mesh->mTextureCoords[0][n];
+            vertices.push_back({
+                {pos.x, pos.y, pos.z},
+                {nrm.x, nrm.y, nrm.z},
+                {txc.x, txc.y} // consider if flipped (ogl vs dx)
+            });
         }
-        GLuint texture = texFromImg(TEXTURE_FILENAME);
-        Mesh mesh = upload_indexed_mesh(vertices, indices, texture);
+
+        // todo: attempt to get tex from .mtl file
+        auto texture = texFromImg(fname + ".png");
+        auto mesh = upload_indexed_mesh(vertices, indices, texture);
         model.meshes.push_back(mesh);
     }
     return model;

@@ -8,7 +8,7 @@ using namespace glm;
 // Spaceship style relative camera
 class Camera {
 public:
-    Camera(){}
+    Camera() = default;
 
     Camera(vec3 position, vec3 forward, vec3 up, float fov):
         position(position), 

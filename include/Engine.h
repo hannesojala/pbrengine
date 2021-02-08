@@ -19,7 +19,7 @@ public:
     Engine(int width, int height) :
         window(Window(width, height, "PBR Engine")),
         camera(Camera()),
-        running(true)
+        running(true) 
     {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
@@ -34,6 +34,7 @@ public:
         program = Shader(shaders);
         model = import_obj("suz_subdiv_1.obj");
     }
+
     ~Engine() 
     {   
         glDeleteProgram(program.getID());
@@ -57,7 +58,7 @@ public:
             case SDL_KEYDOWN :
                 switch(window.event.key.keysym.sym) {
                 case SDLK_p :
-                    std::cout << "FPS: " << 1/dt_seconds << "\n";
+                    std::cout << "FPS: " << 1.0/dt_seconds << "\n";
                     break;
                 case SDLK_v :
                     window.setSwap(!window.getSwap());
@@ -99,12 +100,12 @@ public:
 
     void render() {
 
-        glClearColor(1.0, 0.5, 0.5, 1.0);
+        glClearColor(0.5, 0.5, 0.5, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         program.use();
-        glm::mat4 proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
-        glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
+        auto proj = glm::perspective(camera.fov, window.getAspect(), 0.03125f, 64.f);
+        auto view = glm::lookAt(camera.position, camera.position + camera.forward, camera.up);
         program.setUniform("u_mvp", proj * view * glm::mat4(1.f));
 
         for (Mesh mesh : model.meshes) {

@@ -24,34 +24,25 @@ public:
         std::vector<GLuint> compiledShaders;
 
         for (ShaderSrcInfo shaderInfo : sources) {
-            std::string src = openSource(shaderInfo.path);
-            GLuint compiledSrc = compileSource(src, shaderInfo.type);
+            auto src = openSource(shaderInfo.path);
+            auto compiledSrc = compileSource(src, shaderInfo.type);
             compiledShaders.push_back(compiledSrc);
         }
 
-        for (GLuint shader : compiledShaders) {
-            glAttachShader(gl_name, shader);
-        }
+        for (GLuint shader : compiledShaders) glAttachShader(gl_name, shader);
 
         glLinkProgram(gl_name);
 
         int success;
-        char infoLog[512];
+        char log_buff[512];
         glGetProgramiv(gl_name, GL_LINK_STATUS, &success);
         if(!success) {
-            glGetProgramInfoLog(gl_name, 512, NULL, infoLog);
-            std::cerr << "Error linking shader program:\n" << infoLog << "\n";
-            exit(EXIT_FAILURE);
+            glGetProgramInfoLog(gl_name, 512, NULL, log_buff);
+            std::cerr << "Error linking shader program:\n" << log_buff << "\n";
         }
 
-        for (GLuint shader : compiledShaders) {
-            glDeleteShader(shader);
-        }
+        for (GLuint shader : compiledShaders) glDeleteShader(shader);
     }
-
-    // Default move ctor and operator
-    Shader(Shader &&other) = default;
-    Shader &operator=(Shader &&other) = default;
 
 private:
     std::string openSource(std::string path) {
@@ -62,54 +53,47 @@ private:
     }
 
     GLuint compileSource(std::string src, GLenum type) {
-        GLuint shader = glCreateShader(type);
-        const GLchar* c_src = src.c_str();
+        auto shader = glCreateShader(type);
+        auto c_src = src.c_str();
         glShaderSource(shader, 1, &c_src, NULL);
         glCompileShader(shader);
         int success;
-        char infoLogVert[512];
+        char log_buff[512];
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if(!success) {
-            glGetShaderInfoLog(shader, 512, NULL, infoLogVert);
-            std::cerr << "Error compiling shader source:\n" << src << "\n" << infoLogVert << "\n";
+            glGetShaderInfoLog(shader, 512, NULL, log_buff);
+            std::cerr << "Error compiling shader source:\n" << src << "\n" << log_buff << "\n";
         }
         return shader;
     }
 
     GLuint gl_name;
 public:
-    GLuint getID() const {
-        return gl_name;
+    GLuint getID() const { return gl_name; }
+
+    void use() { glUseProgram(gl_name); }
+
+    bool LocErr(GLint location, const std::string& name) {
+        if (location >= 0) return false;
+        std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
+        return true;
     }
 
     void setUniform(std::string uniform, glm::vec4 value) {
         GLint location = glGetUniformLocation(gl_name, uniform.c_str());
-        if (location < 0) {
-            std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
-            return;
-        }
+        if (LocErr(location, uniform)) std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
     void setUniform(std::string uniform, glm::mat4 value) {
         GLint location = glGetUniformLocation(gl_name, uniform.c_str());
-        if (location < 0) {
-            std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
-            return;
-        }
+        if (LocErr(location, uniform)) std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
         glUniformMatrix4fv(location, 1, false, glm::value_ptr(value));
     }
 
     void setUniform(std::string uniform, GLuint value) {
         GLint location = glGetUniformLocation(gl_name, uniform.c_str());
-        if (location < 0) {
-            std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
-            return;
-        }
+        if (LocErr(location, uniform)) std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
         glUniform1i(location, value);
-    }
-
-    void use() {
-        glUseProgram(gl_name);
     }
 };
