@@ -7,18 +7,26 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/pbrmaterial.h>
 #include <iostream>
 #include <Texture.h>
 
+/* Assimp is ass, use a small gltf header or something */
+
 using namespace glm;
 
-struct vertex_t {
+struct Vertex {
     vec3 position, normal;
     vec2 tex_coord;
 };
 
+struct PBR_map_set {
+    GLuint dif, mtl_rgh, nrm;
+};
+
 struct Mesh {
-    GLuint vbo, ibo, vao, texture;
+    GLuint vbo, ibo, vao;
+    PBR_map_set maps;
     GLuint num_indices;
 };
 
@@ -27,45 +35,43 @@ struct Model {
     std::vector<Model> children;
 };
 
-Mesh upload_indexed_mesh(std::vector<vertex_t> vertices, std::vector<GLuint> indices, GLuint texture) {
+Mesh upload_indexed_mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, PBR_map_set maps) {
     Mesh mesh;
 
     glCreateBuffers(1, &mesh.vbo);	
-    glNamedBufferStorage(mesh.vbo, sizeof(vertex_t) * vertices.size(), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(mesh.vbo, sizeof(Vertex) * vertices.size(), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glCreateBuffers(1, &mesh.ibo);
     glNamedBufferStorage(mesh.ibo, sizeof(GLuint) * indices.size(), indices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glCreateVertexArrays(1, &mesh.vao);
 
-    glVertexArrayVertexBuffer(mesh.vao, 0, mesh.vbo, 0, sizeof(vertex_t));
+    glVertexArrayVertexBuffer(mesh.vao, 0, mesh.vbo, 0, sizeof(Vertex));
     glVertexArrayElementBuffer(mesh.vao, mesh.ibo);
 
     glEnableVertexArrayAttrib(mesh.vao, 0);
     glEnableVertexArrayAttrib(mesh.vao, 1);
     glEnableVertexArrayAttrib(mesh.vao, 2);
 
-    glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex_t, position));
-    glVertexArrayAttribFormat(mesh.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(vertex_t, normal));
-    glVertexArrayAttribFormat(mesh.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(vertex_t, tex_coord));
+    glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
+    glVertexArrayAttribFormat(mesh.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal));
+    glVertexArrayAttribFormat(mesh.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, tex_coord));
 
     glVertexArrayAttribBinding(mesh.vao, 0, 0);
     glVertexArrayAttribBinding(mesh.vao, 1, 0);
     glVertexArrayAttribBinding(mesh.vao, 2, 0);
 
-    mesh.texture = texture;
+    mesh.maps = maps;
     mesh.num_indices = indices.size();
 
     return mesh;
 }
 
-Model node_trav(aiNode* node, const aiScene* scene) {
+Model node_trav(aiNode* node, const aiScene* scene, std::string dir) {
     Model model;
-    std::cout << "Model: " << "\n";
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-        std::cout << "  Mesh " << i << ": " << "\n";
         auto ai_mesh = scene->mMeshes[i];
-        std::vector<vertex_t> vertices;
+        std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
         indices.reserve(3 * ai_mesh->mNumFaces);
 
@@ -85,26 +91,32 @@ Model node_trav(aiNode* node, const aiScene* scene) {
             });
         }
 
-        std::string texname = std::string(scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str()) + ".png";
-        std::cout << "      Material name: " << texname << "\n";
-        auto texture = texFromImg(texname);
-        auto mesh = upload_indexed_mesh(vertices, indices, texture);
+        auto mat = scene->mMaterials[ai_mesh->mMaterialIndex];
+        aiString dif_map_name, mtl_rgh_map_name, nrm_map_name;
+
+        mat->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0),   dif_map_name);
+        mat->Get(AI_MATKEY_TEXTURE(aiTextureType_UNKNOWN, 0),   mtl_rgh_map_name);
+        mat->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0),   nrm_map_name);
+
+        auto mesh = upload_indexed_mesh(vertices, indices, {
+            texFromImg(dir + "/" + std::string(dif_map_name.C_Str())),
+            texFromImg(dir + "/" + std::string(mtl_rgh_map_name.C_Str())),
+            texFromImg(dir + "/" + std::string(nrm_map_name.C_Str()))});
+
         model.meshes.push_back(mesh);
     }
-    for (unsigned int i = 0; i < node->mNumChildren; i++) {
-        std::cout << "Child " << i << ": " << "\n";
-        model.children.push_back(node_trav(node->mChildren[i], scene));
-    }
+    for (unsigned int i = 0; i < node->mNumChildren; i++) model.children.push_back(node_trav(node->mChildren[i], scene, dir));
     return model;
 }
 
-Model import_obj(const std::string& filename) {
+Model import_model(const std::string& model_name) {
     Model model;
     Assimp::Importer importer;
     
-    const aiScene* scene = importer.ReadFile(filename,
+    const aiScene* scene = importer.ReadFile(model_name + "/" + model_name + ".gltf",
         aiProcess_FlipUVs | aiProcess_Triangulate);
-    std::cout << "Scene total meshes: " << scene->mNumMeshes << "\n";
 
-    return node_trav(scene->mRootNode, scene);
+    // todo: error check
+
+    return node_trav(scene->mRootNode, scene, model_name);
 }

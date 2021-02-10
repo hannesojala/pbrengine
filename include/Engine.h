@@ -9,6 +9,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+/* Figure out why black screen rarely */
+
 auto shaders = std::vector<ShaderSrcInfo>{
     {"vert.glsl", GL_VERTEX_SHADER},
     {"frag.glsl", GL_FRAGMENT_SHADER}
@@ -32,15 +34,20 @@ public:
         }
 
         program = create_shader(shaders);
-        model = import_obj("helm.obj");
+        model = import_model("Helm");
+        camera.position -= 32.0f * camera.forward;
     }
 
     ~Engine() {   
         glDeleteProgram(program);
         for (auto mesh : model.meshes) {
-            glDeleteTextures(1, &(mesh.texture));
+            glDeleteTextures(1, &(mesh.maps.dif));
+            glDeleteTextures(1, &(mesh.maps.mtl_rgh));
+            glDeleteTextures(1, &(mesh.maps.nrm));
+
             glDeleteBuffers(1, &(mesh.vbo));
             glDeleteBuffers(1, &(mesh.ibo));
+            
             glDeleteVertexArrays(1, &(mesh.vao));
         }
     }
@@ -100,16 +107,25 @@ public:
         if(keystate[SDL_SCANCODE_E])        camera.rollView(float(dt_seconds)  *-2.5f);
     }
 
-    void renderModel(Model model, glm::mat4 proj_m_view) {
-        setUniform(program, "u_mvp", proj_m_view * glm::mat4(1.f));
+    void renderModel(Model model, glm::mat4 proj_view) {
+        setUniform(program, "u_mvp", proj_view * glm::mat4(1.f));
+        setUniform(program, "u_model", glm::mat4(1.f));
+        setUniform(program, "u_view_pos", glm::vec4(camera.position, 1.0f));
         for (Mesh mesh : model.meshes) {
-            glBindTextureUnit(0, mesh.texture);
-            setUniform(program, "u_texture", 0);
+            glBindTextureUnit(0, mesh.maps.dif);
+            setUniform(program, "u_diffuse", 0);
+
+            glBindTextureUnit(1, mesh.maps.mtl_rgh);
+            setUniform(program, "u_mtl_rgh", 1);
+
+            glBindTextureUnit(2, mesh.maps.nrm);
+            setUniform(program, "u_normal",  2);
+
             glBindVertexArray(mesh.vao);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
             glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, 0);
         }
-        for (Model child : model.children) renderModel(child, proj_m_view); 
+        for (Model child : model.children) renderModel(child, proj_view); 
     }
 
     void render() {

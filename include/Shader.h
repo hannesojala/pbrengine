@@ -68,18 +68,18 @@ bool locErr(GLint location, const std::string& name) {
 
 void setUniform(GLuint program, std::string uniform, glm::vec4 value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());
-    if (locErr(location, uniform)) std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
+    if (locErr(location, uniform)) exit(EXIT_FAILURE);
     glUniform4f(location, value.x, value.y, value.z, value.w);
 }
 
 void setUniform(GLuint program, std::string uniform, glm::mat4 value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());
-    if (locErr(location, uniform)) std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
+    if (locErr(location, uniform)) exit(EXIT_FAILURE);
     glUniformMatrix4fv(location, 1, false, glm::value_ptr(value));
 }
 
 void setUniform(GLuint program, std::string uniform, GLuint value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());
-    if (locErr(location, uniform)) std::cerr << "Shader error: Could not obtain location of uniform: \"" << uniform << "\".\n";
+    if (locErr(location, uniform)) exit(EXIT_FAILURE);
     glUniform1i(location, value);
 }

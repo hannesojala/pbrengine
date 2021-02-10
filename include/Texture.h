@@ -9,6 +9,10 @@
 
 /* Still a distaster */
 
+/* AND NOW I FIND OUT RGBA IS BROKEN? */
+
+/* TODO: LOAD ANY RGB/RGBA ANY PRECISION PNG */
+
 GLuint texFromImg(std::string path) {
     IMG_Init(~0);
     auto img_surf = IMG_Load(path.c_str());
@@ -18,7 +22,7 @@ GLuint texFromImg(std::string path) {
     }
 
     auto is_4_bpp = img_surf->format->BitsPerPixel == 4;
-    // Why are both necessary?
+    // Why are both necessary? WHY DOES RGBA NOT WORK?
     auto format = (is_4_bpp) ? GL_RGBA : GL_RGB;
     auto sized_format = (is_4_bpp) ? GL_RGBA8 : GL_RGB8;
 
