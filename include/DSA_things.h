@@ -16,7 +16,7 @@
 using namespace glm;
 
 struct Vertex {
-    vec3 position, normal;
+    vec3 position, normal, tangent;
     vec2 tex_coord;
 };
 
@@ -52,14 +52,17 @@ Mesh upload_indexed_mesh(std::vector<Vertex> vertices, std::vector<GLuint> indic
     glEnableVertexArrayAttrib(mesh.vao, 0);
     glEnableVertexArrayAttrib(mesh.vao, 1);
     glEnableVertexArrayAttrib(mesh.vao, 2);
+    glEnableVertexArrayAttrib(mesh.vao, 3);
 
     glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
     glVertexArrayAttribFormat(mesh.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal));
-    glVertexArrayAttribFormat(mesh.vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, tex_coord));
+    glVertexArrayAttribFormat(mesh.vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent));
+    glVertexArrayAttribFormat(mesh.vao, 3, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, tex_coord));
 
     glVertexArrayAttribBinding(mesh.vao, 0, 0);
     glVertexArrayAttribBinding(mesh.vao, 1, 0);
     glVertexArrayAttribBinding(mesh.vao, 2, 0);
+    glVertexArrayAttribBinding(mesh.vao, 3, 0);
 
     mesh.maps = maps;
     mesh.num_indices = indices.size();
@@ -83,10 +86,12 @@ Model node_trav(aiNode* node, const aiScene* scene, std::string dir) {
         for (unsigned int n = 0; n < ai_mesh->mNumVertices; n++) {
             auto pos = ai_mesh->mVertices[n],
                  nrm = ai_mesh->mNormals[n],
+                 tgt = ai_mesh->mTangents[n],
                  txc = ai_mesh->mTextureCoords[0][n];
             vertices.push_back({
                 {pos.x, pos.y, pos.z},
                 {nrm.x, nrm.y, nrm.z},
+                {tgt.x, tgt.y, tgt.z},
                 {txc.x, txc.y}
             });
         }
@@ -114,9 +119,12 @@ Model import_model(const std::string& model_name) {
     Assimp::Importer importer;
     
     const aiScene* scene = importer.ReadFile(model_name + "/" + model_name + ".gltf",
-        aiProcess_FlipUVs | aiProcess_Triangulate);
+        aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
-    // todo: error check
+    if (!scene)  {
+        std::cerr << "Assimp error: " << importer.GetErrorString() << "\n";
+        return model;
+    }
 
     return node_trav(scene->mRootNode, scene, model_name);
 }

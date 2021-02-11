@@ -3,6 +3,8 @@
 in vec2 uvCoords;
 in vec3 normal;
 in vec3 frag_pos;
+in vec3 tangent;
+in vec3 bitangent;
 
 out vec4 FragColor;
 
@@ -36,12 +38,13 @@ vec3 light_pos = vec3(0.0, 64.0, 64.0);
 vec3 light_clr = vec3(8000.0);
   
 void main() {
-    vec3 norm = normalize(normal);
-    vec3 unused = 0.001 * texture(u_normal, uvCoords).xyz;
+    vec3 norm_map = normalize(texture(u_normal, uvCoords).rgb * 2.0 - 1.0);
+    mat3 tbn = mat3(tangent, bitangent, normal);
+    vec3 norm = normalize(tbn * norm_map);
     vec3 diffuse = texture(u_diffuse, uvCoords).xyz;
     vec3 mtl_rgh = texture(u_mtl_rgh, uvCoords).xyz;
     float metalness = mtl_rgh.b;
-    float roughness = clamp(mtl_rgh.g, 0.00025, 1.0);
+    float roughness = clamp(mtl_rgh.g * mtl_rgh.g, 0.00025, 1.0);
     
     vec3 view_dir = normalize(u_view_pos.xyz - frag_pos);
     vec3 light_dir = normalize(light_pos - frag_pos);
@@ -65,5 +68,5 @@ void main() {
 
     vec3 clr = ndl * (tc_diffuse + tc_specular) / ((dist+1.0) * (dist+1.0));
 
-    FragColor = vec4(0.1 * diffuse + unused + clr, 1.0);
+    FragColor = vec4(0.05 * diffuse + clr, 1.0);
 }

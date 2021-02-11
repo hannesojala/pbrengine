@@ -60,26 +60,27 @@ GLuint create_shader(const std::vector<ShaderSrcInfo>& sources) {
     return name;
 }
 
-bool locErr(GLint location, const std::string& name) {
-    if (location >= 0) return false;
+bool checkLocErr(GLint location, const std::string& name) {
+    static bool SUPPRESS_LOC_ERRS = false;
+    if (location >= 0 || SUPPRESS_LOC_ERRS) return false;
     std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
-    return true;
+    return (SUPPRESS_LOC_ERRS = true);
 }
 
 void setUniform(GLuint program, std::string uniform, glm::vec4 value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());
-    if (locErr(location, uniform)) exit(EXIT_FAILURE);
+    checkLocErr(location, uniform);
     glUniform4f(location, value.x, value.y, value.z, value.w);
 }
 
 void setUniform(GLuint program, std::string uniform, glm::mat4 value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());
-    if (locErr(location, uniform)) exit(EXIT_FAILURE);
+    checkLocErr(location, uniform);
     glUniformMatrix4fv(location, 1, false, glm::value_ptr(value));
 }
 
 void setUniform(GLuint program, std::string uniform, GLuint value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());
-    if (locErr(location, uniform)) exit(EXIT_FAILURE);
+    checkLocErr(location, uniform);
     glUniform1i(location, value);
 }
