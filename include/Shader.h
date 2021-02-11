@@ -11,11 +11,13 @@
 #include <sstream>
 #include <iostream>
 
+/* Struct representing a shader source */
 struct ShaderSrcInfo {
     std::string path;
     GLenum type;
 };
 
+/* Compile a shader source string and return its name */
 GLuint compileSource(std::string src, GLenum type) {
     auto shader = glCreateShader(type);
     auto src_c_str = src.c_str();
@@ -31,11 +33,13 @@ GLuint compileSource(std::string src, GLenum type) {
     return shader;
 }
 
+/* Take vector of shader source information and compile and link it into a program */
 GLuint create_shader(const std::vector<ShaderSrcInfo>& sources) {
     auto name = glCreateProgram();
 
     std::vector<GLuint> compiled_shaders;
 
+    /* read file, compile shader, and note it down */
     for (ShaderSrcInfo shader_info : sources) {
         std::ifstream ifs(shader_info.path);
         std::stringstream buffer;
@@ -43,8 +47,8 @@ GLuint create_shader(const std::vector<ShaderSrcInfo>& sources) {
         compiled_shaders.push_back(compileSource(buffer.str(), shader_info.type));
     }
 
+    /* Attach shaders and link */
     for (GLuint shader : compiled_shaders) glAttachShader(name, shader);
-
     glLinkProgram(name);
 
     int success;
@@ -55,17 +59,21 @@ GLuint create_shader(const std::vector<ShaderSrcInfo>& sources) {
         std::cerr << "Error linking shader program:\n" << log_buff << "\n";
     }
 
+    /* Cleanup */
     for (GLuint shader : compiled_shaders) glDeleteShader(shader);
 
     return name;
 }
 
+/* Check if there is an error. Stops logging after first. */
 bool checkLocErr(GLint location, const std::string& name) {
     static bool SUPPRESS_LOC_ERRS = false;
     if (location >= 0 || SUPPRESS_LOC_ERRS) return false;
     std::cerr << "Shader error: Could not obtain location of uniform: \"" << name << "\".\n";
     return (SUPPRESS_LOC_ERRS = true);
 }
+
+/* Set shader uniforms of various types */
 
 void setUniform(GLuint program, std::string uniform, glm::vec4 value) {
     GLint location = glGetUniformLocation(program, uniform.c_str());

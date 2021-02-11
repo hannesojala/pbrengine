@@ -29,7 +29,7 @@ GLuint texFromImg(std::string path) {
     GLuint name;
     glCreateTextures(GL_TEXTURE_2D, 1, &name);
     
-    auto max_mips = std::log2(std::min(img_surf->w, img_surf->h)); // why min?
+    auto max_mips = std::log2(std::min(img_surf->w, img_surf->h)); // why min again?
     glTextureParameteri(name, GL_TEXTURE_WRAP_S, GL_REPEAT );
     glTextureParameteri(name, GL_TEXTURE_WRAP_T, GL_REPEAT );
     glTextureParameteri(name, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);

@@ -15,29 +15,36 @@
 
 using namespace glm;
 
+/* Struct representing a vertex with position, normal, tangent, and texture coordinate attributes */
 struct Vertex {
     vec3 position, normal, tangent;
     vec2 tex_coord;
 };
 
-struct PBR_map_set {
-    GLuint dif, mtl_rgh, nrm;
+/* Struct representing a PBR material through GLuint names for textures previously uploaded. */
+struct Material {
+    GLuint albedo, metal_rough, normal;
 };
 
+/* Struct representing a mesh through GLuint names for vertex/index buffers and a vao representing it. */
+/* Also stores material and num_indices for indexed drawing. */
 struct Mesh {
     GLuint vbo, ibo, vao;
-    PBR_map_set maps;
+    Material material;
     GLuint num_indices;
 };
 
+/* Struct representing a scene/model composed of a number of meshes and child models. */
 struct Model {
     std::vector<Mesh> meshes;
     std::vector<Model> children;
 };
 
-Mesh upload_indexed_mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, PBR_map_set maps) {
+/* Upload an indexed mesh consisting of supplied vertices, indices, and material and return a mesh struct of names to the relevant objects. */
+Mesh upload_indexed_mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, Material material) {
     Mesh mesh;
 
+    /* Create vertex and index buffers, and vertex array object */
     glCreateBuffers(1, &mesh.vbo);	
     glNamedBufferStorage(mesh.vbo, sizeof(Vertex) * vertices.size(), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
 
@@ -46,43 +53,55 @@ Mesh upload_indexed_mesh(std::vector<Vertex> vertices, std::vector<GLuint> indic
 
     glCreateVertexArrays(1, &mesh.vao);
 
+    /* Link VBO to binding index 0 of VAO */
     glVertexArrayVertexBuffer(mesh.vao, 0, mesh.vbo, 0, sizeof(Vertex));
     glVertexArrayElementBuffer(mesh.vao, mesh.ibo);
 
+    /* TODO: Programmatically using attribute spec. struct. */
+    /* Enable vertex attributes */
     glEnableVertexArrayAttrib(mesh.vao, 0);
     glEnableVertexArrayAttrib(mesh.vao, 1);
     glEnableVertexArrayAttrib(mesh.vao, 2);
     glEnableVertexArrayAttrib(mesh.vao, 3);
 
+    /* Specify format */
     glVertexArrayAttribFormat(mesh.vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
     glVertexArrayAttribFormat(mesh.vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal));
     glVertexArrayAttribFormat(mesh.vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent));
     glVertexArrayAttribFormat(mesh.vao, 3, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, tex_coord));
 
+    /* Bind VAO attributes to VBO using binding index 0*/
     glVertexArrayAttribBinding(mesh.vao, 0, 0);
     glVertexArrayAttribBinding(mesh.vao, 1, 0);
     glVertexArrayAttribBinding(mesh.vao, 2, 0);
     glVertexArrayAttribBinding(mesh.vao, 3, 0);
 
-    mesh.maps = maps;
+    /* Set mesh draw info */
+    mesh.material = material;
     mesh.num_indices = indices.size();
 
     return mesh;
 }
 
-Model node_trav(aiNode* node, const aiScene* scene, std::string dir) {
+/* Recursively traverse an assimp scene and extract models, meshes, and materials. */
+Model node_trav(aiNode* node, const aiScene* scene, std::string model_directory) {
     Model model;
+
+    /* Process model meshes */
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         auto ai_mesh = scene->mMeshes[i];
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
+        /* Reserve space for 3 indices for each face */
         indices.reserve(3 * ai_mesh->mNumFaces);
 
+        /* Extract indices from faces */
         for (unsigned int f = 0; f < ai_mesh->mNumFaces; f++) {
             auto fidxs = ai_mesh->mFaces[f].mIndices;
             indices.insert(indices.end(), {fidxs[0], fidxs[1], fidxs[2]});
         }
 
+        /* Extract vertex information from mesh */
         for (unsigned int n = 0; n < ai_mesh->mNumVertices; n++) {
             auto pos = ai_mesh->mVertices[n],
                  nrm = ai_mesh->mNormals[n],
@@ -96,35 +115,40 @@ Model node_trav(aiNode* node, const aiScene* scene, std::string dir) {
             });
         }
 
-        auto mat = scene->mMaterials[ai_mesh->mMaterialIndex];
-        aiString dif_map_name, mtl_rgh_map_name, nrm_map_name;
+        /* Get material texture names */
+        auto ai_material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        aiString albedo_map_name, metal_rough_map_name, normal_map_name;
+        ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0),   albedo_map_name);
+        ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_UNKNOWN, 0),   metal_rough_map_name);
+        ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0),   normal_map_name);
 
-        mat->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0),   dif_map_name);
-        mat->Get(AI_MATKEY_TEXTURE(aiTextureType_UNKNOWN, 0),   mtl_rgh_map_name);
-        mat->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0),   nrm_map_name);
-
+        /* Upload mesh with vertices, indices, and PBR map textures */
         auto mesh = upload_indexed_mesh(vertices, indices, {
-            texFromImg(dir + "/" + std::string(dif_map_name.C_Str())),
-            texFromImg(dir + "/" + std::string(mtl_rgh_map_name.C_Str())),
-            texFromImg(dir + "/" + std::string(nrm_map_name.C_Str()))});
-
+            texFromImg(model_directory + "/" + std::string(albedo_map_name.C_Str())),
+            texFromImg(model_directory + "/" + std::string(metal_rough_map_name.C_Str())),
+            texFromImg(model_directory + "/" + std::string(normal_map_name.C_Str()))});
+        
+        /* Add mesh to model */
         model.meshes.push_back(mesh);
     }
-    for (unsigned int i = 0; i < node->mNumChildren; i++) model.children.push_back(node_trav(node->mChildren[i], scene, dir));
+    /* Recursively process child models */
+    for (unsigned int i = 0; i < node->mNumChildren; i++) model.children.push_back(node_trav(node->mChildren[i], scene, model_directory));
     return model;
 }
 
+/* Import a model from directory ./model_name/ and return the processed version of it. */
+/* Assumes a gltf model in ./model_name/model_name.gltf with non bundled textures */
 Model import_model(const std::string& model_name) {
     Model model;
     Assimp::Importer importer;
     
+    /* Import and apply processing */
     const aiScene* scene = importer.ReadFile(model_name + "/" + model_name + ".gltf",
         aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
-    if (!scene)  {
-        std::cerr << "Assimp error: " << importer.GetErrorString() << "\n";
-        return model;
-    }
+    /* If successful return the traversed scene as a model */
+    if (scene) return node_trav(scene->mRootNode, scene, model_name);
 
-    return node_trav(scene->mRootNode, scene, model_name);
+    std::cerr << "Assimp error: " << importer.GetErrorString() << "\n";
+    return model;
 }

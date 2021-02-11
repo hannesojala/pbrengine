@@ -8,9 +8,11 @@
 
 #include <Shader.h>
 
+/* memory leak note: seems that simply SDL_Init() followed by SDL_Quit() causes a memory leak of 80kb! */
+
 class Window {
 public:
-    // memory leak note: seems that simply SDL_Init() followed by SDL_Quit() causes a memory leak of 80kb!
+    /* Init SDL video, make window, create GL context */
     Window(int w, int h, std::string title) {
         SDL_Init(SDL_INIT_VIDEO);
 

@@ -3,11 +3,11 @@
 #include <iostream>
 #include <glad/glad.h>
 
-// not 100% mine, from stack overflow i think, lost link a long time ago
+/* not 100% mine, modified from stack overflow i think, lost link a long time ago */
 void debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
-    // To shut the compiler up about unused param warnings. 
-    // I do not plan to use them but they are required for this callback function.
+    /* To shut the compiler up about unused param warnings. */
+    /* I do not plan to use them but they are required for this callback function. */
     (void)length; (void)user_param;
 
 	auto const src_str = [source]() {

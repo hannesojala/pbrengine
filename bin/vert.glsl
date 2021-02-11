@@ -3,9 +3,9 @@
 in vec3 a_position;
 in vec3 a_normal;
 in vec3 a_tangent;
-in vec2 a_uvCoords;
+in vec2 a_uv_coords;
 
-out vec2 uvCoords;
+out vec2 uv_coords;
 out vec3 normal;
 out vec3 frag_pos;
 out vec3 tangent;
@@ -15,7 +15,7 @@ uniform mat4 u_mvp;
 uniform mat4 u_model;
 
 void main() {
-    uvCoords = a_uvCoords;
+    uv_coords = a_uv_coords;
     normal = a_normal;
     tangent = a_tangent;
     bitangent = -normalize(cross(normal, tangent));
