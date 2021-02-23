@@ -21,7 +21,7 @@ GLuint texFromImg(std::string path) {
         return 0;
     }
 
-    auto is_4_bpp = img_surf->format->BitsPerPixel == 4;
+    auto is_4_bpp = img_surf->format->BytesPerPixel == 4;
     // Why are both necessary? WHY DOES RGBA NOT WORK?
     auto format = (is_4_bpp) ? GL_RGBA : GL_RGB;
     auto sized_format = (is_4_bpp) ? GL_RGBA8 : GL_RGB8;

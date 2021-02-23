@@ -11,8 +11,6 @@
 #include <iostream>
 #include <Texture.h>
 
-/* Assimp is ass, use a small gltf header or something */
-
 using namespace glm;
 
 /* Struct representing a vertex with position, normal, tangent, and texture coordinate attributes */
@@ -117,10 +115,13 @@ Model node_trav(aiNode* node, const aiScene* scene, std::string model_directory)
 
         /* Get material texture names */
         auto ai_material = scene->mMaterials[ai_mesh->mMaterialIndex];
+
         aiString albedo_map_name, metal_rough_map_name, normal_map_name;
         ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0),   albedo_map_name);
         ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_UNKNOWN, 0),   metal_rough_map_name);
         ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0),   normal_map_name);
+
+        std::cout << albedo_map_name.C_Str() << "\n";
 
         /* Upload mesh with vertices, indices, and PBR map textures */
         auto mesh = upload_indexed_mesh(vertices, indices, {
@@ -138,8 +139,6 @@ Model node_trav(aiNode* node, const aiScene* scene, std::string model_directory)
 
 /* Import a model from directory ./model_name/ and return the processed version of it. */
 /* Assumes a gltf model in ./model_name/model_name.gltf with non bundled textures */
-
-/* NOTE: GOOD EXAMPLES FOR TINYGLTF LOADER IN ITS REPO, switch to it */
 
 Model import_model(const std::string& model_name) {
     Model model;
