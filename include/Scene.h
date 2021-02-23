@@ -138,6 +138,9 @@ Model node_trav(aiNode* node, const aiScene* scene, std::string model_directory)
 
 /* Import a model from directory ./model_name/ and return the processed version of it. */
 /* Assumes a gltf model in ./model_name/model_name.gltf with non bundled textures */
+
+/* NOTE: GOOD EXAMPLES FOR TINYGLTF LOADER IN ITS REPO, switch to it */
+
 Model import_model(const std::string& model_name) {
     Model model;
     Assimp::Importer importer;

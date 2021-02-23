@@ -3,7 +3,7 @@
 #include <Window.h>
 #include <Texture.h>
 #include <Camera.h>
-#include <DSA_things.h>
+#include <Scene.h>
 #include <Debug.h>
 
 #include <glm/glm.hpp>
@@ -39,7 +39,7 @@ public:
 
         program = create_shader(shaders);
         model = import_model("Helm");
-        camera.position -= 32.0f * camera.forward;
+        camera.position -= 16.0f * camera.forward;
     }
 
     ~Engine() {   
