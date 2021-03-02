@@ -38,7 +38,7 @@ public:
         }
 
         program = create_shader(shaders);
-        model = import_model("Helm");
+        model = import_model(MODEL_NAME);
         camera.position -= 16.0f * camera.forward;
     }
 
@@ -116,10 +116,11 @@ public:
     }
 
     /* Recursively render model and its children using provided projection and view */
-    void renderModel(Model model, glm::mat4 proj_view) {
+    void renderModel(Model model, glm::mat4 proj_view) { /* All wrong */
         /* Set shader uniforms */
-        setUniform(program, "u_mvp", proj_view * glm::mat4(1.f));
-        setUniform(program, "u_model", glm::mat4(1.f));
+        model_mat = glm::rotate(model_mat, (float) dt_seconds, glm::vec3(0, 1, 0));
+        setUniform(program, "u_mvp", proj_view * model_mat);
+        setUniform(program, "u_model", model_mat);
         setUniform(program, "u_view_pos", glm::vec4(camera.position, 1.0f));
 
         /* Draw model meshes */
@@ -161,6 +162,7 @@ private:
     Camera camera;
 
     Model model;
+    glm::mat4 model_mat = glm::mat4(1.0f);
 
     Uint64 time_init  = 0,
            time_prev  = 0,

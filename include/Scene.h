@@ -81,13 +81,15 @@ Mesh upload_indexed_mesh(std::vector<Vertex> vertices, std::vector<GLuint> indic
     return mesh;
 }
 
-/* Recursively traverse an assimp scene and extract models, meshes, and materials. */
+/* All wrong */
 Model node_trav(aiNode* node, const aiScene* scene, std::string model_directory) {
     Model model;
 
+    std::cout << node->mName.C_Str() << "\n";
     /* Process model meshes */
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         auto ai_mesh = scene->mMeshes[i];
+        std::cout << "  " << ai_mesh->mName.C_Str() << "\n";
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
         /* Reserve space for 3 indices for each face */
@@ -121,7 +123,9 @@ Model node_trav(aiNode* node, const aiScene* scene, std::string model_directory)
         ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_UNKNOWN, 0),   metal_rough_map_name);
         ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0),   normal_map_name);
 
-        std::cout << albedo_map_name.C_Str() << "\n";
+        std::cout << "      Albedo:   " << albedo_map_name.C_Str() << "\n";
+        std::cout << "      RGHMET:   " << metal_rough_map_name.C_Str() << "\n";
+        std::cout << "      Normal:   " << normal_map_name.C_Str() << "\n";
 
         /* Upload mesh with vertices, indices, and PBR map textures */
         auto mesh = upload_indexed_mesh(vertices, indices, {

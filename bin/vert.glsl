@@ -16,7 +16,7 @@ uniform mat4 u_model;
 
 void main() {
     uv_coords = a_uv_coords;
-    normal = a_normal;
+    normal = (u_model * vec4(a_normal, 1.0)).xyz;
     tangent = a_tangent;
     bitangent = -normalize(cross(normal, tangent));
     frag_pos = (u_model * vec4(a_position, 1.0)).xyz;
